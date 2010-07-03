@@ -7,6 +7,7 @@ class Sprite
   attr_accessor :ox, :oy, :angle
   attr_accessor :rect
   attr_accessor :zoom_x, :zoom_y
+  attr_accessor :visible
   attr_accessor :texture
   def initialize *args
     case args.size
@@ -23,6 +24,7 @@ class Sprite
       @angle   = hash[:angle]||0
       @zoom_x  = hash[:zoom_x]||hash[:zoom]||100
       @zoom_y  = hash[:zoom_y]||hash[:zoom]||100
+      @visible = hash[:visible].nil? ? true : hash[:visible].nil?
       @texture = hash[:texture]||Texture.new
       @rect = hash[:rect]||Rect.new(0, 0, @texture.width, @texture.height)
     end
@@ -52,6 +54,7 @@ class Sprite
 
   def output # intern use ONLY
     return unless @texture
+    return unless @visible
 
     GL.LoadIdentity
     GL.Translate(@x, -@y, 0)
