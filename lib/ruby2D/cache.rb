@@ -113,7 +113,8 @@ module Cache
         corrected.push *blank
       end
       blank = [0]*4*struct[:real_size]
-      (struct[:real_size]-struct[:height]).times {corrected.push *blank} # cause of too deep stack level
+      # cause of too deep stack level
+      (struct[:real_size]-struct[:height]).times {corrected.push *blank}
     when 7 # RGB + one alpha
       blank = [0]*4*(struct[:real_size]-struct[:width])
       for y in 0...struct[:height]
@@ -131,7 +132,8 @@ module Cache
         corrected.push *blank
       end
       blank = [0]*4*struct[:real_size]
-      (struct[:real_size]-struct[:height]).times {corrected.push *blank} # cause of too deep stack level
+      # cause of too deep stack level
+      (struct[:real_size]-struct[:height]).times {corrected.push *blank}
     end
     struct[:data] = corrected.pack('C*')
 
@@ -156,7 +158,7 @@ module Cache
       struct[:compression_method] = data[10].ord
       struct[:filter_method] = data[11].ord
       struct[:interlace_method] = data[12].ord
-      #ap struct
+#      ap struct
     when 'PLTE'
       struct[:plte] = data.unpack('C*')
     when 'IDAT'

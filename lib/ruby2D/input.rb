@@ -94,9 +94,19 @@ module Input
   def dir8
     return 1 if press?(49)
     return 3 if press?(51)
-#    return 5 if press?(53)
     return 7 if press?(55)
     return 9 if press?(57)
     dir4
+  end
+
+  # Checks the status of the directional buttons,
+  # translates the data into a specialized 9-direction input format,
+  # and returns the number pad equivalent (1, 2, 3, 4, 5, 6, 7, 8, 9).
+  #
+  # If no directional buttons are being pressed (or the equivalent),
+  # returns 0.
+  def dir9
+    ('1'..'9').each {|i| return i.to_i if press? i}
+    0
   end
 end
