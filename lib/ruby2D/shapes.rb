@@ -4,6 +4,16 @@ class Shape
   def include? arg
     self === arg
   end
+  def translate x, y
+    # TODO : ...
+    @x += x
+    @y += y
+    self
+  end
+  def translate! x, y
+    @x += x
+    @y += y
+  end
 end
 
 # The rectangle class.
@@ -14,6 +24,8 @@ class Rect < Shape
   #
   # args can be :
   # * (defaults arguments)
+  # * x..x2, y..y2
+  # * width, height
   # * x, y, width, height
   # * x, y, width, height, ox, oy, angle
   # * a Hash with all or part of the args
@@ -31,6 +43,18 @@ class Rect < Shape
       @angle  = hash[:angle] || 0
       @width  = hash[:width] || 1
       @height = hash[:height] || 1
+    when 2
+      a1, a2 = *args
+      if Range === a1 and Range === a2
+        @x, @width = a1.first, a1.last - a1.first
+        @width += 1 unless a1.exclude_end?
+        @y, @height = a2.first, a2.last - a2.first
+        @height += 1 unless a2.exclude_end?
+      else
+        @width, @height = a1, a2
+        @x, @y, @ox, @oy, @angle = 0, 0, 0, 0, 0
+      end
+      @ox, @oy, @angle = 0, 0, 0
     when 4 # Integer * 4
       @x, @y, @width, @height = *args
       @ox, @oy, @angle = 0, 0, 0
@@ -107,7 +131,7 @@ class Square < Rect
       @oy     = hash[:oy]||0
       @angle  = hash[:angle]||0
       @size   = hash[:size]||hash[:width]||hash[:height]||1
-    when 4 # Integer * 3
+    when 3 # Integer * 3
       @x, @y, @size = *args
       @ox, @oy, @angle = 0, 0, 0
     when 7 # Integer * 6
