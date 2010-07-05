@@ -16,7 +16,8 @@ class Window
     GLUT.InitWindowSize(@width, @height)
     GLUT.InitWindowPosition(@x, @y)
     @glut_window = GLUT.CreateWindow(@name)
-    p Glut.glutSetIconTitle('favicon.ico')
+    # TODO : fix it
+    Glut.glutSetIconTitle('favicon.ico')
 
     GLUT.ReshapeFunc(method('reshape').to_proc)
     GLUT.DisplayFunc(method('display').to_proc)
