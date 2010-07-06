@@ -66,7 +66,7 @@ class Texture
     @need_bind = true
   end
 
-  def blt texture, rect, x, y, mode=:destination_over
+  def blt texture, rect, x, y, mode=:source_over
     case mode
     when :source
       h = [@height-rect.y, texture.height-rect.x, rect.height].min
@@ -81,10 +81,10 @@ class Texture
     when :source_over
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2+src[0]*(1-a2)+dest[0]*(1-a1)
@@ -97,26 +97,26 @@ class Texture
     when :destination_over
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*a1*a2+src[0]*(1-a2)+dest[0]*(1-a1)
           g = dest[1]*a1*a2+src[1]*(1-a2)+dest[1]*(1-a1)
           b = dest[2]*a1*a2+src[2]*(1-a2)+dest[2]*(1-a1)
-          a = a1*a2+a1*(1-a2)+a2*(1-a1)
+          a = a1+a2-a1*a2
           @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :source_in
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2
@@ -129,10 +129,10 @@ class Texture
     when :destination_in
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*a1*a2
@@ -145,10 +145,10 @@ class Texture
     when :source_out
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*(1-a2)
@@ -161,10 +161,10 @@ class Texture
     when :destination_out
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*(1-a1)
@@ -177,44 +177,44 @@ class Texture
     when :source_atop
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2+dest[0]*(1-a1)
           g = src[1]*a1*a2+dest[1]*(1-a1)
           b = src[2]*a1*a2+dest[2]*(1-a1)
-          a = a1*a2+a2*(1-a1)
+          a = a2
           @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :destination_atop
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*a1*a2+src[0]*(1-a2)
           g = dest[1]*a1*a2+src[1]*(1-a2)
           b = dest[2]*a1*a2+src[2]*(1-a2)
-          a = a1*a2+a1*(1-a2)
+          a = a1
           @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :clear
-      clear rect
+      clear rect.dup.translate(x, y)
     when :xor
       h = [@height-rect.y, rect.height].min
       w = [@width-rect.x, rect.width].min
-      for j in 1..h
-        for i in 1..w
-          src = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
-          dest = texture.pixel(rect.x+i, rect.y+j).data
+      for j in 0...h
+        for i in 0...w
+          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*(1-a2)+dest[0]*(1-a1)
@@ -225,32 +225,38 @@ class Texture
         end
       end
     else
-      fail "#{mode} unknow"
+      fail "mode :#{mode} unknow in Texture#blt"
     end
     @need_bind = true
   end
   def fill *args
+    color = rect = nil
     case args.size
     when 1
-      d1, d2, d3, d4 = 1, 1, @width, @height
+      rect = Rect.new 0...@width, 0...@height
       color = args[0]
     when 2
       rect, color =  *args
-      d1, d2, d3, d4 = *rect.data
     end
-    # TODO : not pix/pix
-    for j in d2..(d4-d2)
-      for i in d1..(d3-d1)
-        draw_pixel i, j, color
-      end
+    str = color.data.pack 'C*'
+    w = [@width-rect.x, rect.width].min
+    h = [@height-rect.y, rect.height].min
+    full = str*w
+    for j in 0...h
+      z = 4*rect.x+4*(rect.y+j)*@real_size
+      @data[z, 4*w] = full
     end
     @need_bind = true
   end
+
   def clear rect=nil
-    rect ||= Rect.new(1..@width, 1..@height)
-    for j in 1..rect.height
-      z = 4*rect.x.to_i+4*(rect.y+j).to_i*@real_size
-      @data[z, 4*rect.width] = "\x00"*4*rect.width
+    rect ||= Rect.new(0...@width, 0...@height)
+    w = [@width-rect.x, rect.width].min
+    h = [@height-rect.y, rect.height].min
+    full = "\x00"*4*w
+    for j in 0...h
+      z = 4*rect.x+4*(rect.y+j)*@real_size
+      @data[z, 4*w] = full
     end
     @need_bind = true
   end
