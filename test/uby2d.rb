@@ -22,12 +22,21 @@ module Ruby2D
     MessageBox.call(0, args*"\n", 'Popup :', 0)
     nil
   end
+
+  # Create a small windows where args will be showed
+  #
+  # Don't stop the flow
+  #
+  # call .to_s when necessary
+  def popupup *args
+    Thread.new {popup *args}
+  end
 end
 include Ruby2D
 
+dir = Dir.getwd
 Dir.chdir File.dirname(__FILE__)
-#~ $: << File.dirname(__FILE__)
-#~ p $:[-1]
+
 # Low level
 require '../lib/ruby2D/application'
 require '../lib/ruby2D/window'
@@ -44,3 +53,5 @@ require '../lib/ruby2D/graphics'
 # Stuff
 require '../lib/ruby2D/shapes'
 require '../lib/ruby2D/color'
+
+Dir.chdir dir

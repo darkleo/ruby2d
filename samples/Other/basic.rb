@@ -1,7 +1,7 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-require 'uby2d'
+require '../uby2d'
 
 Cache.add_location 'Other/'
 app = Application.new :name => 'light', :width => 128, :height => 128

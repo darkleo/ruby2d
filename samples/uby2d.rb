@@ -22,25 +22,33 @@ module Ruby2D
     MessageBox.call(0, args*"\n", 'Popup :', 0)
     nil
   end
+
+  # Create a small windows where args will be showed
+  #
+  # Don't stop the flow
+  #
+  # call .to_s when necessary
+  def popupup *args
+    Thread.new {popup *args}
+  end
 end
 include Ruby2D
 
-Dir.chdir File.dirname(__FILE__)
-#~ $: << File.dirname(__FILE__)
-#~ p $:[-1]
+$: << File.split(File.dirname(__FILE__))[0]
+
 # Low level
-require '../lib/ruby2D/application'
-require '../lib/ruby2D/window'
-require '../lib/ruby2D/mouse'
-require '../lib/ruby2D/input'
+require 'lib/ruby2D/application'
+require 'lib/ruby2D/window'
+require 'lib/ruby2D/mouse'
+require 'lib/ruby2D/input'
 # High level
-require '../lib/ruby2D/cache'
-require '../lib/ruby2D/texture'
-require '../lib/ruby2D/sprite'
+require 'lib/ruby2D/cache'
+require 'lib/ruby2D/texture'
+require 'lib/ruby2D/sprite'
 # Modules
-require '../lib/ruby2D/graphics'
+require 'lib/ruby2D/graphics'
 # TODO : audio
-# require 'ruby2D/audio' # Soon !
+# require 'lib/ruby2D/audio' # Soon !
 # Stuff
-require '../lib/ruby2D/shapes'
-require '../lib/ruby2D/color'
+require 'lib/ruby2D/shapes'
+require 'lib/ruby2D/color'

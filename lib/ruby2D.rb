@@ -19,6 +19,15 @@ module Ruby2D
     MessageBox.call(0, args*"\n", 'Popup :', 0)
     nil
   end
+  
+  # Create a small windows where args will be showed
+  #
+  # Don't stop the flow
+  #
+  # call .to_s when necessary
+  def popupup *args
+    Thread.new {popup *args}
+  end
 end
 include Ruby2D
 
