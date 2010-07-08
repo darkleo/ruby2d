@@ -78,11 +78,8 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir4
-    return 2 if press?(50) or press?(103)
-    return 4 if press?(52) or press?(100)
-    return 6 if press?(54) or press?(102)
-    return 8 if press?(56) or press?(101)
-    return 0
+    (1..4).each {|i| return i if press? 2*i}
+    0
   end
 
   # Checks the status of the directional buttons,
@@ -92,10 +89,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir8
-    return 1 if press?(49)
-    return 3 if press?(51)
-    return 7 if press?(55)
-    return 9 if press?(57)
+    (1..4).each {|i| return i if press? 2*i-1}
     dir4
   end
 
@@ -106,7 +100,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir9
-    ('1'..'9').each {|i| return i.to_i if press? i}
+    (1..9).each {|i| return i.to_i if press? i}
     0
   end
 end
