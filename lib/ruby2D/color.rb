@@ -9,6 +9,13 @@ class Color
   def data
     [@r, @g, @b, @a]
   end
+
+  def self.rand
+    Color.new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
+  end
+  def self.rand_a
+    Color.new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
+  end
 end
 
 # TODO : Add default colors
