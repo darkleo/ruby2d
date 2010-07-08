@@ -5,14 +5,24 @@ class Shape
     self === arg
   end
   def translate x, y
-    # TODO : ...
-    @x += x
-    @y += y
-    self
+    shape = self.dup
+    shape.x += x
+    shape.y += y
+    shape
   end
   def translate! x, y
     @x += x
     @y += y
+    self
+  end
+  def rotate angle
+    shape = self.dup
+    shape.angle += angle
+    shape
+  end
+  def rotate! angle
+    @angle += angle
+    self
   end
 end
 
@@ -35,7 +45,7 @@ class Rect < Shape
       @x, @y, @width, @height = 0, 0, 1, 1
       @ox, @oy, @angle = 0, 0, 0
     when 1 # Hash
-      hash = *args
+      hash = args[0]
       @x      = hash[:x] || 0
       @y      = hash[:y] || 0
       @ox     = hash[:ox] || 0
@@ -52,7 +62,7 @@ class Rect < Shape
         @height += 1 unless a2.exclude_end?
       else
         @width, @height = a1, a2
-        @x, @y, @ox, @oy, @angle = 0, 0, 0, 0, 0
+        @x, @y = 0, 0
       end
       @ox, @oy, @angle = 0, 0, 0
     when 4 # Integer * 4
@@ -124,7 +134,8 @@ class Square < Rect
       @x, @y, @size = 0, 0, 1
       @ox, @oy, @angle = 0, 0, 0
     when 1 # Hash
-      hash = *args
+      # TODO: only size
+      hash = args[0]
       @x      = hash[:x]||0
       @y      = hash[:y]||0
       @ox     = hash[:ox]||0
@@ -154,6 +165,7 @@ class Disc < Shape
   # * x, y, radius
   # * a Hash with all or part of the args
   def initialize *args
+    # TODO : hash
     case args.size
     when 0 # Default values
       @x, @y, @radius = 0, 0, 1
