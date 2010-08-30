@@ -1,6 +1,3 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
 class Sprite
   attr_reader :name, :id
   attr_accessor :x, :y, :z
@@ -8,11 +5,23 @@ class Sprite
   attr_accessor :rect
   attr_accessor :zoom_x, :zoom_y
   attr_accessor :visible
-  attr_accessor :texture
+  attr_reader :texture
   def initialize *args
+    # TODO: args case
     case args.size
     when 0 # Default
-      # TODO:args case
+      @name = ''
+      @x    = 0
+      @y    = 0
+      @z    = 0
+      @ox   = 0
+      @oy   = 0
+      @angle   = 0
+      @zoom_x  = 100
+      @zoom_y  = 100
+      @visible = true
+      @texture = Texture.new
+      @rect = Rect.new(0, 0, @texture.width, @texture.height)
     when 1 # Hash
       hash = args[0]
       @name = hash[:name]
@@ -50,6 +59,12 @@ class Sprite
   def update_texture
     return if @deleted
     @texture.update
+  end
+  
+  def texture=tex
+    return if @texture == tex
+    @texture = tex
+    @rect = Rect.new(0, 0, @texture.width, @texture.height)
   end
 
   def output # intern use ONLY
