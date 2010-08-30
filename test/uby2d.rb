@@ -7,6 +7,7 @@ p 'alternative launch'
 # Require libraries
 require 'opengl'
 require 'glut'
+require 'fmod'
 require 'zlib'
 require 'Win32API'
 

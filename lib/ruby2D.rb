@@ -4,6 +4,7 @@
 # Require libraries
 require 'opengl'
 require 'glut'
+require 'fmod'
 require 'zlib'
 require 'Win32API'
 
@@ -42,8 +43,6 @@ require 'ruby2D/texture'
 require 'ruby2D/sprite'
 # Modules
 require 'ruby2D/graphics'
-# TODO : audio
-# require 'ruby2D/audio' # Soon !
 # Stuff
 require 'ruby2D/shapes'
 require 'ruby2D/color'

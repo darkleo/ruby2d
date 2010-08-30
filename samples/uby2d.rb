@@ -7,6 +7,7 @@ p 'alternative launch'
 # Require libraries
 require 'opengl'
 require 'glut'
+require 'fmod'
 require 'zlib'
 require 'Win32API'
 
@@ -47,8 +48,6 @@ require 'lib/ruby2D/texture'
 require 'lib/ruby2D/sprite'
 # Modules
 require 'lib/ruby2D/graphics'
-# TODO : audio
-# require 'lib/ruby2D/audio' # Soon !
 # Stuff
 require 'lib/ruby2D/shapes'
 require 'lib/ruby2D/color'
