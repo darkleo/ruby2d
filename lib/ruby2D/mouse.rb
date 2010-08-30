@@ -6,19 +6,37 @@ module Mouse
   Left   = :left
   Middle = :middle
   Right  = :right
-  Empty  = {:left => :off,
+  Empty  = {:left   => :off,
             :middle => :off,
-            :right => :off}
+            :right  => :off}
   @data = Empty.clone
   @data[:x] = 0
   @data[:y] = 0
   @next = Empty.clone
-
+  @drag = {:left   => false,
+           :middle => false,
+           :right  => false}
+  @drop = {:left   => false,
+           :middle => false,
+           :right  => false}
 
   # Updates input data.
   # 
   # As a rule, this method is called once per frame.
   def update
+    [:left, :middle, :right].each do |key|
+      @next[key] = :down if @next[key] == :on  and @data[key] == :off
+      @next[key] = :up   if @next[key] == :off and @data[key] == :on
+      if @next[key] == :down
+        @drag[key] = self.position 
+        @drop[key] = false
+      elsif @next[key] == :up
+        @drop[key] = [@drag[key], self.position]
+        @drag[key] = false
+      else
+        @drop[key] = false
+      end
+    end
     @data.update @next
     @next = Empty.clone
     [:left, :middle, :right].each do |key|
@@ -85,6 +103,14 @@ module Mouse
   def release? key=:any
     return @data.include? :up if key == :any
     @data[key] == :up
+  end
+  
+  def drag? key
+    @drag[key]
+  end
+  
+  def drop? key
+    @drop[key]
   end
 
   def in? shape
