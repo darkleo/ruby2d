@@ -9,7 +9,7 @@ app.launch {
   @sprite = Sprite.new :texture => Texture.new('Star.bmp')
   @sprite.ox = @sprite.oy =  @sprite.x = @sprite.y = 64
   loop {
+    Graphics.update
     @sprite.angle += 1
-    sleep 0.02
   }
 }

@@ -54,7 +54,7 @@ app.launch {
     key = Input.dir9
     if key != 0
       rect = Rect.new(0...Size, 0...Size)
-      rect.translate! (key-1)%3*Size, (key-1)/3*Size
+      rect.translate!((key-1)%3*Size, (key-1)/3*Size)
       @grid.texture.blt @numbers, rect, @cursor1.x, @cursor1.y
       x = @cursor1.x/Size
       y = @cursor1.y/Size
