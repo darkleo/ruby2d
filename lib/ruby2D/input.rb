@@ -78,7 +78,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir4
-    (1..4).each {|i| return i if press? 2*i}
+    (1..4).each {|i| return 2*i if press? (2*i).to_s}
     0
   end
 
@@ -89,7 +89,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir8
-    (1..4).each {|i| return i if press? 2*i-1}
+    (1..4).each {|i| return 2*i-1 if press? (2*i-1).to_s}
     dir4
   end
 
@@ -100,7 +100,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir9
-    (1..9).each {|i| return i.to_i if press? i}
+    (1..9).each {|i| return i if press? i.to_s}
     0
   end
 end
