@@ -29,7 +29,7 @@ class Window
     # Mouse
     GLUT.MouseFunc(@procs[:mouse])
     GLUT.PassiveMotionFunc(@procs[:mouse_passive])
-    #~ GLUT.MotionFunc(@procs[:motion])
+    GLUT.MotionFunc(@procs[:motion])
     # Other
     GLUT.IdleFunc(@procs[:idle])
     GLUT.EntryFunc(@procs[:entry])
@@ -137,6 +137,9 @@ class Window
     }
     
     @procs[:mouse_passive] = lambda {|x,y|
+      Mouse.feed :x => x, :y => y
+    }
+    @procs[:motion] = lambda {|x,y|
       Mouse.feed :x => x, :y => y
     }
     
