@@ -1,32 +1,46 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
 class Texture
   attr_reader :width, :height
   attr_reader :real_size, :data #...
+  # Create a new Texture object.
+  #
+  # args can be :
+  # * (defaults arguments)
+  # * x..x2, y..y2
+  # * width, height
+  # * x, y, width, height
+  # * x, y, width, height, ox, oy, angle
+  # * a Hash with all or part of the args
   def initialize *args
     case args.size
+    when 0
+      @width, @height = 1, 1
     when 1 ## String || Hash
-      hash = args[0].class.to_s == 'String' ? Cache.load_texture(*args) : args[0]
-      @name = hash[:name]||''
-      @width = hash[:width]||0
-      @height = hash[:height]||0
-      @real_size ||= hash[:real_size]
-      @data = hash[:data]||[]
+      case args[0]
+      when String
+        hash = Cache.load_texture args[0]
+        @width = hash[:width]
+        @height = hash[:height]
+        @real_size = hash[:real_size]
+        @data = hash[:data]
+      when Hash
+        hash = args[0]
+        @name = hash[:name]||''
+        @width = hash[:width]||0
+        @height = hash[:height]||0
+        @real_size = hash[:real_size]||0
+        @data = hash[:data]||[]
+      else
+        fail 'Argument error in Texture#initialize'
+      end
     when 2 # Integer * 2
       @width, @height = *args
     when 3 # Integer * 3
       @width, @height, @name = *args
+    else
+      fail 'Bad number of arguments in Texture#initialize'
     end
     @name ||= ''
-    @width ||= 0
-    @height ||= 0
-
-    # TODO : log2
-    unless @real_size
-      @real_size  = 1
-      @real_size *= 2 while @real_size < [@width, @height].max
-    end
+    @real_size = 2**Math.log2([@width, @height].max).ceil
     @data ||= "\x00"*@real_size**2*4
     fail 'Invalid size' unless @data.size == @real_size**2*4
     @need_bind = true
@@ -65,7 +79,20 @@ class Texture
     end
     @need_bind = true
   end
-
+  
+  # Modes are
+  # * :source
+  # * :dest
+  # * :source_over
+  # * :destination_over
+  # * :source_in
+  # * :destination_in
+  # * :source_out
+  # * :destination_out
+  # * :source_atop
+  # * :destination_atop
+  # * :clear
+  # * :xor
   def blt texture, rect, x, y, mode=:source_over
     case mode
     when :source

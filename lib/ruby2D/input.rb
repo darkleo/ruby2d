@@ -1,5 +1,4 @@
 # A module that handles input data from a keyboard.
-
 module Input
   extend self
   @current = {}

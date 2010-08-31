@@ -1,6 +1,3 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
 class Application
   # Argument is a Hash in which could be specified the following
   # * :name

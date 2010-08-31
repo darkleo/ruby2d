@@ -6,8 +6,13 @@ class Sprite
   attr_accessor :zoom_x, :zoom_y
   attr_accessor :visible
   attr_reader :texture
+  # Create a new Sprite object.
+  #
+  # args can be :
+  # * (defaults arguments)
+  # * texture
+  # * a Hash with all or part of the args
   def initialize *args
-    # TODO: args case
     case args.size
     when 0 # Default
       @name = ''
@@ -22,20 +27,40 @@ class Sprite
       @visible = true
       @texture = Texture.new
       @rect = Rect.new(0, 0, @texture.width, @texture.height)
-    when 1 # Hash
-      hash = args[0]
-      @name = hash[:name]
-      @x    = hash[:x]||0
-      @y    = hash[:y]||0
-      @z    = hash[:z]||0
-      @ox   = hash[:ox]||0
-      @oy   = hash[:oy]||0
-      @angle   = hash[:angle]||0
-      @zoom_x  = hash[:zoom_x]||hash[:zoom]||100
-      @zoom_y  = hash[:zoom_y]||hash[:zoom]||100
-      @visible = hash[:visible].nil? ? true : hash[:visible].nil?
-      @texture = hash[:texture]||Texture.new
-      @rect = hash[:rect]||Rect.new(0, 0, @texture.width, @texture.height)
+    when 1
+      case args[0]
+      when Hash
+        hash = args[0]
+        @name = hash[:name]
+        @x    = hash[:x]||0
+        @y    = hash[:y]||0
+        @z    = hash[:z]||0
+        @ox   = hash[:ox]||0
+        @oy   = hash[:oy]||0
+        @angle   = hash[:angle]||0
+        @zoom_x  = hash[:zoom_x]||hash[:zoom]||100
+        @zoom_y  = hash[:zoom_y]||hash[:zoom]||100
+        @visible = hash[:visible].nil? ? true : hash[:visible].nil?
+        @texture = hash[:texture]||Texture.new
+        @rect = hash[:rect]||Rect.new(0, 0, @texture.width, @texture.height)
+      when Texture
+        @name = ''
+        @x    = 0
+        @y    = 0
+        @z    = 0
+        @ox   = 0
+        @oy   = 0
+        @angle   = 0
+        @zoom_x  = 100
+        @zoom_y  = 100
+        @visible = true
+        @texture = args[0]
+        @rect = Rect.new(0, 0, @texture.width, @texture.height)
+      else
+        fail 'Argument error in Sprite#initialize'
+      end
+    else
+      fail 'Bad number of arguments in Sprite#initialize'
     end
     create_id
     Graphics.add self

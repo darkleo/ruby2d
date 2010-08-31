@@ -53,7 +53,7 @@ class Rect < Shape
       @angle  = hash[:angle] || 0
       @width  = hash[:width] || 1
       @height = hash[:height] || 1
-    when 2
+    when 2 # Range * 2 || Numeric * 2
       a1, a2 = *args
       if Range === a1 and Range === a2
         @x, @width = a1.first, a1.last - a1.first
@@ -125,6 +125,7 @@ class Square < Rect
   #
   # args can be :
   # * (defaults arguments)
+  # * size
   # * x, y, size
   # * x, y, size, ox, oy, angle
   # * a Hash with all or part of the args
@@ -133,22 +134,29 @@ class Square < Rect
     when 0 # Default values
       @x, @y, @size = 0, 0, 1
       @ox, @oy, @angle = 0, 0, 0
-    when 1 # Hash
-      # TODO: only size
-      hash = args[0]
-      @x      = hash[:x]||0
-      @y      = hash[:y]||0
-      @ox     = hash[:ox]||0
-      @oy     = hash[:oy]||0
-      @angle  = hash[:angle]||0
-      @size   = hash[:size]||hash[:width]||hash[:height]||1
-    when 3 # Integer * 3
+    when 1 # Hash || Numeric
+      case args[0]
+      when Hash
+        hash = args[0]
+        @x      = hash[:x]||0
+        @y      = hash[:y]||0
+        @ox     = hash[:ox]||0
+        @oy     = hash[:oy]||0
+        @angle  = hash[:angle]||0
+        @size   = hash[:size]||hash[:width]||hash[:height]||1
+      when Numeric
+        @x, @y, @size = 0, 0, args[0]
+        @ox, @oy, @angle = 0, 0, 0
+      else
+        fail 'Argument error in Square#initialize'
+      end
+    when 3 # Numeric * 3
       @x, @y, @size = *args
       @ox, @oy, @angle = 0, 0, 0
-    when 7 # Integer * 6
+    when 7 # Numeric * 6
       @x, @y, @size, @ox, @oy, @angle = *args
     else
-      fail 'Bad number of arguments in Rect#initialize'
+      fail 'Bad number of arguments in Square#initialize'
     end
     self
   end
