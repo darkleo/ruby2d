@@ -1,23 +1,39 @@
 class Color
   attr_accessor :r, :g, :b, :a
-  # Create a new Rect object.
-  def initialize r=0, g=0, b=0, a=255
+  private_class_method :new
+  def initialize r, g, b, a=255
     @r, @g, @b, @a = r, g, b, a
   end
-  # Return color data
-  #
-  # [r, g, b, a]
-  def data
+  
+  def self.rgb r, g, b
+    new r, g, b
+  end
+  def self.rgba r, g, b, a
+    new r, g, b, a
+  end
+  def self.html s
+    s =~ /#((..){3,4})/
+    new *[$1].pack('H*').unpack('C*')
+  end
+  
+  def to_html alpha=true
+    a = alpha ? to_rgba : to_rgb
+    '#' + a.pack('C*').unpack('H*')[0]
+  end
+  def to_rgb
+    [@r, @g, @b]
+  end
+  def to_rgba
     [@r, @g, @b, @a]
   end
   
   # Return random color
   def self.rand
-    Color.new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
+    new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
   end
   # Return random color, with random alpha
   def self.rand_a
-    Color.new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
+    new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
   end
 end
 
