@@ -2,7 +2,7 @@ module Cache
   extend self
   @@data = {}
   @@local = ['']
-  def load_texture name
+  def load_bitmap name
     return @@data[name] if @@data.include? name
     @@local.each {|path| load_with_path path, name }
     return @@data[name] if @@data.include? name

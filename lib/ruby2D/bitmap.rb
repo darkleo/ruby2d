@@ -1,7 +1,7 @@
-class Texture
+class Bitmap
   attr_reader :width, :height
   attr_reader :real_size, :data #...
-  # Create a new Texture object.
+  # Create a new Bitmap object.
   #
   # args can be :
   # * (defaults arguments)
@@ -17,7 +17,7 @@ class Texture
     when 1 ## String || Hash
       case args[0]
       when String
-        hash = Cache.load_texture args[0]
+        hash = Cache.load_bitmap args[0]
         @width = hash[:width]
         @height = hash[:height]
         @real_size = hash[:real_size]
@@ -30,14 +30,14 @@ class Texture
         @real_size = hash[:real_size]||0
         @data = hash[:data]||[]
       else
-        fail 'Argument error in Texture#initialize'
+        fail 'Argument error in Bitmap#initialize'
       end
     when 2 # Integer * 2
       @width, @height = *args
     when 3 # Integer * 3
       @width, @height, @name = *args
     else
-      fail 'Bad number of arguments in Texture#initialize'
+      fail 'Bad number of arguments in Bitmap#initialize'
     end
     @name ||= ''
     @real_size = 2**Math.log2([@width, @height].max).ceil
@@ -45,38 +45,38 @@ class Texture
     fail 'Invalid size' unless @data.size == @real_size**2*4
     @need_bind = true
   end
-  def update
-    bind if @need_bind
-  end
-
+  
   def use
-    GL.BindTexture(GL::TEXTURE_2D, @tex_id)
+    GL.BindTexture GL::TEXTURE_2D, @tex_id
   end
   def bind
+    return unless @need_bind
     @need_bind = false
     @tex_id ||= GL.GenTextures(1)[0]
     use
     return if @data.empty?
     # blur_more = GL::LINEAR or GL::NEAREST
-    GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::LINEAR)
-    GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::LINEAR)
+    #~ GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::LINEAR)
+    #~ GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::LINEAR)
+    GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::NEAREST)
+    GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::NEAREST)
     GL.TexImage2D(GL::TEXTURE_2D, 0, GL::RGBA, @real_size, @real_size,
         0, GL::RGBA, GL::UNSIGNED_BYTE, @data)
   end
 
-  def pixel x, y
-    begin
-      return Color.new *@data[4*x+4*y*@real_size, 4].unpack('C*')
-    rescue
-      fail 'pixel out of range'
-    end
+  def get_pixel x, y
+    #~ begin
+      Color.rgba *@data[4*x+4*y*@real_size, 4].unpack('C*')
+    #~ rescue
+      #~ fail 'pixel out of range'
+    #~ end
   end
-  def draw_pixel x, y, c
-    begin
-      @data[4*x.to_i+4*y.to_i*@real_size, 4] = c.data.pack 'C*'
-    rescue
-      fail 'pixel out of range'
-    end
+  def set_pixel x, y, c
+    #~ begin
+      @data[4*x.to_i+4*y.to_i*@real_size, 4] = c.to_rgba.pack 'C*'
+    #~ rescue
+      #~ fail 'pixel out of range'
+    #~ end
     @need_bind = true
   end
   
@@ -93,15 +93,15 @@ class Texture
   # * :destination_atop
   # * :clear
   # * :xor
-  def blt texture, rect, x, y, mode=:source_over
+  def blt bitmap, rect, x, y, mode=:source_over
     case mode
     when :source
-      h = [@height-rect.y, texture.height-rect.x, rect.height].min
+      h = [@height-rect.y, bitmap.height-rect.x, rect.height].min
       for j in 0...h
         z_src  = 4*x+4*(y+j)*@real_size
-        z_dest = 4*rect.x+4*(rect.y+j)*texture.real_size
-        w = [@width-rect.x, texture.width-rect.x, rect.width].min
-        @data[z_src, 4*w] = texture.data[z_dest, 4*w]
+        z_dest = 4*rect.x+4*(rect.y+j)*bitmap.real_size
+        w = [@width-rect.x, bitmap.width-rect.x, rect.width].min
+        @data[z_src, 4*w] = bitmap.data[z_dest, 4*w]
       end
     when :dest
       # nada
@@ -110,7 +110,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -126,7 +126,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -142,7 +142,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -158,7 +158,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -174,7 +174,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -190,7 +190,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -206,7 +206,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -222,7 +222,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -240,7 +240,7 @@ class Texture
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = texture.data[4*(rect.x+i)+4*(rect.y+j)*texture.real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
           dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
@@ -252,7 +252,7 @@ class Texture
         end
       end
     else
-      fail "mode :#{mode} unknow in Texture#blt"
+      fail "mode :#{mode} unknow in Bitmap#blt"
     end
     @need_bind = true
   end
@@ -263,9 +263,9 @@ class Texture
       rect = Rect.new 0...@width, 0...@height
       color = args[0]
     when 2
-      rect, color =  *args
+      rect, color = *args
     end
-    str = color.data.pack 'C*'
+    str = color.to_rgba.pack 'C*'
     w = [@width-rect.x, rect.width].min
     h = [@height-rect.y, rect.height].min
     full = str*w
