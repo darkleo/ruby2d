@@ -9,7 +9,7 @@ module Input
   # As a rule, this method is called once per frame.
   def update
     for key in @current.keys | @next.keys
-      if @next[key] != nil
+      if @next[key]
         case @next[key]
         when :press
           @current[key] = (@current[key]||1)+1
