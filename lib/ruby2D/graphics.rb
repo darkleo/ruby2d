@@ -5,6 +5,7 @@ module Graphics
   
   attr_reader :frametotal
   attr_accessor :frames, :framerate, :timebase, :framebase
+  attr_accessor :need_bind, :need_update
   
   @frames = 0
   @framerate = 60
@@ -14,11 +15,10 @@ module Graphics
   def all
     @@display_list
   end
-
   def add graph
     graph.update
     @@display_list << graph
-    @@display_list.sort!
+    sort!
   end
   def remove graph
     @@display_list.delete graph
@@ -27,25 +27,23 @@ module Graphics
     @@display_list.each {|graph| return graph if graph.name == graph_name}
     fail 'Graph not found'
   end
+  def sort!
+    @@display_list.sort!
+  end
 
-  def allow_update
-    @need_update = true
-  end
   def update
-    sleep 0.01 until @need_update
-    @need_update = false
+    catch :done do
+      loop do
+        sleep 0.01
+        $mutex.synchronize do
+          if @need_update
+            @need_update = false
+            @need_bind = true
+            throw :done
+          end
+        end
+      end
+    end
     @frames += 1
-    @@display_list.each {|graph| graph.update}
-  end
-  def update_intern
-#    epoch = Time.now.to_f
-#    eps = epoch-@last_time
-#    return unless eps > 1.0/@framerate
-#    @last_time = epoch
-    #~ @need_update = false
-#    p 1/eps rescue -1
-    # No GL calls in Threads
-    @@display_list.sort! # moche
-    @@display_list.each {|graph| graph.update_texture}
   end
 end
