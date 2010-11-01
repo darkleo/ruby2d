@@ -1,14 +1,23 @@
 # A superclass that handles shapes like squares, rectangles, discs...
 class Shape
   attr_accessor :x, :y
+  def initialize
+    @x, @y, @ox, @oy, @angle = 0, 0, 0, 0, 0
+  end
   def include? arg
     self === arg
   end
+  def move x, y
+    shape = self.dup
+    shape.move! x, y
+  end
+  def move! x, y
+    @x, @y = x, y
+    self
+  end
   def translate x, y
     shape = self.dup
-    shape.x += x
-    shape.y += y
-    shape
+    shape.translate! x, y
   end
   def translate! x, y
     @x += x
@@ -17,8 +26,7 @@ class Shape
   end
   def rotate angle
     shape = self.dup
-    shape.angle += angle
-    shape
+    shape.rotate! angle
   end
   def rotate! angle
     @angle += angle
@@ -38,46 +46,43 @@ class Rect < Shape
   # * width, height
   # * x, y, width, height
   # * x, y, width, height, ox, oy, angle
-  # * a Hash with all or part of the args
   def initialize *args
     case args.size
-    when 0 # Default values
-      @x, @y, @width, @height = 0, 0, 1, 1
-      @ox, @oy, @angle = 0, 0, 0
-    when 1 # Hash
-      hash = args[0]
-      @x      = hash[:x] || 0
-      @y      = hash[:y] || 0
-      @ox     = hash[:ox] || 0
-      @oy     = hash[:oy] || 0
-      @angle  = hash[:angle] || 0
-      @width  = hash[:width] || 1
-      @height = hash[:height] || 1
-    when 2 # Range * 2 || Numeric * 2
-      a1, a2 = *args
-      if Range === a1 and Range === a2
-        @x, @width = a1.first, a1.last - a1.first
-        @width += 1 unless a1.exclude_end?
-        @y, @height = a2.first, a2.last - a2.first
-        @height += 1 unless a2.exclude_end?
+    when 0
+      @x, @y, @width, @height, @ox, @oy, @angle = 0, 0, 1, 1, 0, 0, 0
+    when 2
+      if args.all? {|x| x.class == Range}
+        @x = args[0].first
+        @width = args[0].last - @x
+        @y = args[1].first
+        @height = args[1].last - @y
       else
-        @width, @height = a1, a2
+        @width, @height = *args
         @x, @y = 0, 0
       end
       @ox, @oy, @angle = 0, 0, 0
-    when 4 # Integer * 4
-      @x, @y, @width, @height = *args
-      @ox, @oy, @angle = 0, 0, 0
-    when 7 # Integer * 7
+    when 4
+      if args.all? {|x| Numeric === x}
+        @x, @y, @width, @height = *args
+        @ox, @oy = 0, 0
+      else
+        @x = args[0].first
+        @width = args[0].last - @x
+        @width += 1 unless args[0].exclude_end?
+        @y = args[1].first
+        @height = args[1].last - @y
+        @height += 1 unless args[1].exclude_end?
+        @ox, @oy = args[2, 2]
+      end
+      @angle = 0
+    when 7
       @x, @y, @width, @height, @ox, @oy, @angle = *args
     else
       fail 'Bad number of arguments in Rect#initialize'
     end
     self
   end
-  def data
-    return [@x, @y, @width, @height]
-  end
+  
   # Return vertex coordinates
   #
   # [[x,y], [x,y], [x,y], [x,y]]
@@ -122,42 +127,10 @@ class Square < Rect
   alias :height :size
   alias :height= :size=
   # Create a new Square object.
-  #
-  # args can be :
-  # * (defaults arguments)
-  # * size
-  # * x, y, size
-  # * x, y, size, ox, oy, angle
-  # * a Hash with all or part of the args
-  def initialize *args
-    case args.size
-    when 0 # Default values
-      @x, @y, @size = 0, 0, 1
-      @ox, @oy, @angle = 0, 0, 0
-    when 1 # Hash || Numeric
-      case args[0]
-      when Hash
-        hash = args[0]
-        @x      = hash[:x]||0
-        @y      = hash[:y]||0
-        @ox     = hash[:ox]||0
-        @oy     = hash[:oy]||0
-        @angle  = hash[:angle]||0
-        @size   = hash[:size]||hash[:width]||hash[:height]||1
-      when Numeric
-        @x, @y, @size = 0, 0, args[0]
-        @ox, @oy, @angle = 0, 0, 0
-      else
-        fail 'Argument error in Square#initialize'
-      end
-    when 3 # Numeric * 3
-      @x, @y, @size = *args
-      @ox, @oy, @angle = 0, 0, 0
-    when 7 # Numeric * 6
-      @x, @y, @size, @ox, @oy, @angle = *args
-    else
-      fail 'Bad number of arguments in Square#initialize'
-    end
+  def initialize size=1, angle=0
+    super()
+    @size = size
+    @angle = angle
     self
   end
 end
@@ -166,34 +139,12 @@ end
 class Disc < Shape
   attr_accessor :radius
   # Create a new Disc object.
-  # 
-  # args can be :
-  # * (defaults arguments)
-  # * radius
-  # * x, y, radius
-  # * a Hash with all or part of the args
-  def initialize *args
-    # TODO : hash
-    case args.size
-    when 0 # Default values
-      @x, @y, @radius = 0, 0, 1
-    when 1 # Numeric
-      @x, @y, @radius = 0, 0, *args
-    when 3 # Numeric * 3
-      @x, @y, @radius = *args
-    else
-      fail 'Argument error in Disc#initialize'
-    end
+  def initialize radius=1
+    super()
+    @radius = radius
     self
   end
   def === *args
-    case args.size
-    when 1
-      return (args[0][0]-@x)+(args[0][1]-@y) <= @radius
-    when 2
-      return (args[0]-@x)+(args[1]-@y) <= @radius
-    else
-      fail 'Argument error in Disc#==='
-    end
+    (args[0][0]-@x)**2+(args[0][1]-@y)**2 <= @radius**2
   end
 end
