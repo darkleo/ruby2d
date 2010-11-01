@@ -1,7 +1,8 @@
 # Sudoku solver
 # By Darkleo
 
-require '../uby2d'
+$:.insert 0, '../../lib/'
+require 'ruby2d'
 Cache.add_location 'Sudoku/'
 
 def solve board
@@ -24,15 +25,17 @@ def solve board
 end
 
 Size = 42
-app = Application.new :name => 'Sudoku', :width => 378, :height => 462
-
-app.launch {
-  @back = Sprite.new :texture => Texture.new('back.png')
-  @cursor1 = Sprite.new :texture => Texture.new('curs1.png'), :visible => false
-  @cursor2 = Sprite.new :texture => Texture.new('curs2.png'), :visible => false,
-                        :y => 9*Size
-  @numbers = Texture.new 'numbers.png'
-  @grid = Sprite.new :texture => Texture.new(378, 378)
+Window.name = 'Sudoku'
+Window.resize 378, 462
+Window.run {
+  @back = Sprite.new Bitmap.new('back.png')
+  @cursor1 = Sprite.new Bitmap.new('curs1.png')
+  @cursor1.visible = false
+  @cursor2 = Sprite.new Bitmap.new('curs2.png')
+  @cursor2.visible = false
+  @cursor2.y = 9*Size
+  @numbers = Bitmap.new 'numbers.png'
+  @grid = Sprite.new Bitmap.new(378, 378)
 
   # Input
   board = "0"*81
@@ -55,7 +58,7 @@ app.launch {
     if key != 0
       rect = Rect.new(0...Size, 0...Size)
       rect.translate!((key-1)%3*Size, (key-1)/3*Size)
-      @grid.texture.blt @numbers, rect, @cursor1.x, @cursor1.y
+      @grid.bitmap.blt @numbers, rect, @cursor1.x, @cursor1.y, :source
       x = @cursor1.x/Size
       y = @cursor1.y/Size
       board[x+9*y] = key.to_s
@@ -63,12 +66,11 @@ app.launch {
     if Input.press?(' ') or Input.press?('0')
       rect = Rect.new(0...Size, 0...Size)
       rect.translate! @cursor1.x, @cursor1.y
-      @grid.texture.clear rect
+      @grid.bitmap.clear rect
       x = @cursor1.x/Size
       y = @cursor1.y/Size
       board[x+9*y] = '0'
     end
-    sleep 0.02
   end
 
   # Result
@@ -79,7 +81,8 @@ app.launch {
     y = i/9*Size
     rect = Rect.new(0...Size, 0...Size)
     rect.translate! (solved[i].to_i-1)%3*Size, (solved[i].to_i-1)/3*Size
-    @grid.texture.blt @numbers, rect, x, y, :source
+    @grid.bitmap.blt @numbers, rect, x, y, :source
+    Graphics.update
   }
   loop {
     Mouse.update

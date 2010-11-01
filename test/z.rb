@@ -1,20 +1,18 @@
-# Texture#blt tests
+# Sprite#z tests
 
-require 'uby2d'
+$:.insert 0, '../lib/'
+require 'ruby2d'
 
 Cache.add_location 'Media/'
-app = Application.new :name => 'Texture#blt', :width => 516, :height => 384
-app.launch {
-  tex1 = Texture.new 'blt1.png'
-  tex2 = Texture.new 'blt2.png'
-  
-  @s1 = Sprite.new :texture => tex1
-  @s2 = Sprite.new :texture => tex2
-  @s2.z = 10
+Window.name = 'Sprite#z'
+Window.resize 256, 128
+Window.run {
+  @s1 = Sprite.new Bitmap.new 'blt1.png' 
+  @s2 = Sprite.new Bitmap.new 'blt2.png'
   
   loop {
     Graphics.update
-    @s1.z += 1
-    p @s1.z
+    Mouse.update
+    @s1.z = 160 - Mouse.x
   }
 }

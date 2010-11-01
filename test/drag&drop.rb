@@ -1,9 +1,11 @@
 # drag&drop tests
 
-require 'uby2d'
+$:.insert 0, '../lib/'
+require 'ruby2d'
 
-app = Application.new :name => 'drag&drop', :width => 516, :height => 384
-app.launch {
+Window.name = 'drag&drop'
+Window.resize 516, 384
+Window.run {
   loop {
     Graphics.update
     Mouse.update

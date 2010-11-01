@@ -1,22 +1,25 @@
 # Morpion
 # By Darkleo
 
+$:.insert 0, '../../lib/'
 require 'ap'
-require '../uby2d'
+require 'ruby2d'
 
 Cache.add_location 'Morpion/'
 Size = 85
 class Move
   @@board = [nil]*9
-  X = Texture.new 'X.png'
-  O = Texture.new 'O.png'
+  X = Bitmap.new 'X.png'
+  O = Bitmap.new 'O.png'
   attr_reader :win_move, :valid, :x, :y
   def initialize x, y, c
     @valid = @@board[x + 3*y].nil?
     return unless @valid
-    t = c == :x ? X : O
     @x, @y = x, y
-    @sprite = Sprite.new :x => Size*x, :y => Size*y, :texture => t
+    @sprite = Sprite.new
+    @sprite.x = Size*x
+    @sprite.y = Size*y
+    @sprite.bitmap = c == :x ? X : O
     @@board[x + 3*y] = c
     @win_move = win? c
     true
@@ -34,14 +37,16 @@ class Move
   end
 end
 
-app = Application.new :name => 'Morpion', :width => 3*Size, :height => 3*Size
-app.launch {
-  @back = Sprite.new :texture => Texture.new('back.png')
+Window.name = 'Morpion'
+Window.resize 3*Size, 3*Size
+Window.run {
+  @back = Sprite.new
+  @back.bitmap = Bitmap.new 'back.png'
   @moves = []
   loop {
     Graphics.update
     Mouse.update
-    sleep 0.1
+    sleep 0.01
     if Mouse.trigger? Mouse::Left
       c = @moves.size % 2 == 0 ? :x : :o
       m = Move.new(Mouse.x/Size, Mouse.y/Size, c)
@@ -51,17 +56,16 @@ app.launch {
     end
     break if @moves.size == 9
   }
-  if @moves.size == 9
-    @back.texture = Texture.new('lose.png')
-    @moves.each {|m| m.dispose}
-  else
-    @back.texture = Texture.new('win.png')
+  if @moves.last.win_move
+    @back.bitmap = Bitmap.new('win.png')
     c = @moves.size % 2 == 0 ? :o : :x
     @moves.each {|m| m.dispose}
     @winmove = Move.new(1, 0.5, c)
+  else
+    @back.bitmap = Bitmap.new('lose.png')
+    @moves.each {|m| m.dispose}
   end
   Graphics.update
-  sleep 0.5
   loop {
     Mouse.update
     exit! if Mouse.trigger? Mouse::Left

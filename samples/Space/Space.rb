@@ -1,10 +1,11 @@
 # Space
 # By Darkleo
 
-require '../uby2d'
-Cache.add_location 'Space/'
-
+$:.insert 0, '../../lib/'
+require 'ruby2d'
 require 'ap' #awesome_printer
+
+Cache.add_location 'Space/'
 
 class P
   attr_accessor :p, :v, :m
@@ -51,23 +52,24 @@ class C
   end
 end
 
-app = Application.new :name => 'Space'
-app.launch do
+#~ Graphics.framerate = 1.0/0
+Window.name = 'Space'
+Window.run do
   begin
-  tstar = Texture.new('Star.bmp')
+  tstar = Bitmap.new('Star.bmp')
   150.times do
     r = rand(10)+1
-    s = Sprite.new :texture => tstar,
+    s = Sprite.new :bitmap => tstar,
     :x => rand(640), :y => rand(480),
     :ox => 64, :oy => 64, :zoom => r
   end
   s1 = Sprite.new :name => 'Earth',
-    :texture => Texture.new('Earth.png'),
+    :bitmap => Bitmap.new('Earth.png'),
     :ox => 64, :oy => 64
   s2 = Sprite.new :name => 'Moon',
-    :texture => Texture.new('Moon.png'),
+    :bitmap => Bitmap.new('Moon.png'),
     :ox => 64, :oy => 64, :zoom => 33
-  s2.set_update {@angle += 100*0.02}
+  #~ s2.set_update {@angle += 100*0.02}
   p1 = P.new(C.new, C.new, 6e24) # Terre
   p2 = P.new(C.new(3e5), C.new(0, -30), 2e17) # Lune
   G = 6.674e-11
