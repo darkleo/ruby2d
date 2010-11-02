@@ -1,49 +1,50 @@
-module Graphics
-  extend self
-
-  @@display_list ||= []
+module Ruby2D
+  Graphics = Class.new do
+  def initialize
+    @display_list = []
+    
+    @frames = 0
+    @framerate = 60
+    @timebase = 0
+    @framebase = 0
+  end
   
   attr_reader :frametotal
   attr_accessor :frames, :framerate, :timebase, :framebase
   attr_accessor :need_bind, :need_update
-  
-  @frames = 0
-  @framerate = 60
-  @timebase = 0
-  @framebase = 0
 
   def all
-    @@display_list
+    @display_list
   end
   def add graph
     graph.update
-    @@display_list << graph
+    @display_list << graph
     sort!
   end
   def remove graph
-    @@display_list.delete graph
+    @display_list.delete graph
   end
   def get graph_name
-    @@display_list.each {|graph| return graph if graph.name == graph_name}
+    @display_list.each {|graph| return graph if graph.name == graph_name}
     fail 'Graph not found'
   end
   def sort!
-    @@display_list.sort!
+    @display_list.sort!
   end
 
-  def update
-    catch :done do
-      loop do
-        sleep 0.01
-        $mutex.synchronize do
-          if @need_update
-            @need_update = false
-            @need_bind = true
-            throw :done
-          end
+  def update force=false
+    @frames += 1
+    #~ return if force or @frames%2==0
+    loop do
+      Mutex.synchronize do
+        if @need_update
+          @need_update = false
+          @need_bind = true
+          return
         end
       end
+      sleep 0.01
     end
-    @frames += 1
   end
+end.new
 end

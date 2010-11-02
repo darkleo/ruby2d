@@ -1,18 +1,21 @@
-module Cache
-  extend self
-  @@data = {}
-  @@local = ['']
+module Ruby2D
+  Cache = Class.new do
+  def initialize
+    @data = {}
+    @local = ['']
+  end
+  
   def load_bitmap name
-    return @@data[name] if @@data.include? name
-    @@local.each {|path| load_with_path path, name }
-    return @@data[name] if @@data.include? name
+    return @data[name] if @data.include? name
+    @local.each {|path| load_with_path path, name }
+    return @data[name] if @data.include? name
     fail Errno::ENOENT, name
   end
   def add_location local
-    @@local << local
+    @local << local
   end
   def remove_location local
-    @@local.delete local
+    @local.delete local
   end
   
   private
@@ -20,11 +23,11 @@ module Cache
     begin
       case File.extname name
       when '.img'
-        @@data[name] = load_img path, name
+        @data[name] = load_img path, name
       when '.png'
-        @@data[name] = load_png path, name
+        @data[name] = load_png path, name
       when '.bmp'
-        @@data[name] = load_bmp path, name
+        @data[name] = load_bmp path, name
       when ''
       else
         return false
@@ -207,4 +210,5 @@ module Cache
     struct[:data] = corrected.pack('C*')
     return struct
   end
+end.new
 end

@@ -17,7 +17,7 @@ class Bitmap
     when 1 ## String || Hash
       case args[0]
       when String
-        hash = Cache.load_bitmap args[0]
+        hash = Ruby2D::Cache.load_bitmap args[0]
         @width = hash[:width]
         @height = hash[:height]
         @real_size = hash[:real_size]

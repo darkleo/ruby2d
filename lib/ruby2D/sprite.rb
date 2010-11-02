@@ -69,11 +69,11 @@ class Sprite < Graphic
       fail ArgumentError, 'wrong number of arguments'
     end
     create_id
-    Graphics.add self
+    Ruby2D::Graphics.add self
     @deleted = false
   end
   def dispose
-    Graphics.remove self
+    Ruby2D::Graphics.remove self
     @deleted = true
   end
 
@@ -86,7 +86,7 @@ class Sprite < Graphic
 
   def z= z
     @z = z
-    Graphics.sort!
+    Ruby2D::Graphics.sort!
   end
   def bitmap= bitmap
     return if @bitmap == bitmap
