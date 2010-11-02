@@ -6,7 +6,7 @@ module Cache
     return @@data[name] if @@data.include? name
     @@local.each {|path| load_with_path path, name }
     return @@data[name] if @@data.include? name
-    fail "Can't find or open \"#{name}\""
+    fail Errno::ENOENT, name
   end
   def add_location local
     @@local << local
@@ -29,15 +29,15 @@ module Cache
       else
         return false
       end
-    rescue
-      fail $! if $!.message != 'File not found'
+    rescue Errno::ENOENT
     end
     return true
   end
   
   def load_img path, name
-    fail 'File not found' unless FileTest.exist?(path+name)
-    file = File.open(path+name, 'rb')
+    full_path = path+name
+    fail Errno::ENOENT, 'No such file or directory - '+full_path unless FileTest.exist? full_path
+    file = File.open full_path, 'rb'
     struct = {:name => name}
     struct[:width]     = file.read(4).unpack('i')[0]
     struct[:height]    = file.read(4).unpack('i')[0]
@@ -49,8 +49,9 @@ module Cache
   def load_png path, name
     # TODO : improve calculs
     # XXX : reshaping ?
-    fail 'File not found' unless FileTest.exist?(path+name)
-    file = File.open(path+name, 'rb')
+    full_path = path+name
+    fail Errno::ENOENT, 'No such file or directory - '+full_path unless FileTest.exist? full_path
+    file = File.open full_path, 'rb'
     struct = {:name => name}
     fail 'Invalid .png file' if file.read(8).unpack('C*') != [137, 80, 78, 71, 13, 10, 26, 10]
 
@@ -178,8 +179,9 @@ module Cache
   end
 
   def load_bmp path, name
-    fail 'File not found' unless FileTest.exist?(path+name)
-    file = File.open(path+name, 'rb')
+    full_path = path+name
+    fail Errno::ENOENT, 'No such file or directory - '+full_path unless FileTest.exist? full_path
+    file = File.open full_path, 'rb'
     struct = {:name => name}
     file.seek(18, IO::SEEK_CUR)
     struct[:width]      = file.read(4).unpack('i')[0]

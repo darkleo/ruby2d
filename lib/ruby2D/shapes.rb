@@ -78,7 +78,7 @@ class Rect < Shape
     when 7
       @x, @y, @width, @height, @ox, @oy, @angle = *args
     else
-      fail 'Bad number of arguments in Rect#initialize'
+      fail ArgumentError, 'wrong number of arguments'
     end
     self
   end
@@ -114,7 +114,7 @@ class Rect < Shape
       return false unless @y..(@y+@height) === args[1]
       return true
     else
-      fail 'Argument error in Rect#==='
+      fail TypeError
     end
   end
 end

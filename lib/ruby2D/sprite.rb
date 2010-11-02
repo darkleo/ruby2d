@@ -63,10 +63,10 @@ class Sprite < Graphic
         @bitmap = args[0]
         @rect = Rect.new(0, 0, @bitmap.width, @bitmap.height)
       else
-        fail 'Argument error in Sprite#initialize'
+        fail TypeError
       end
     else
-      fail 'Bad number of arguments in Sprite#initialize'
+      fail ArgumentError, 'wrong number of arguments'
     end
     create_id
     Graphics.add self

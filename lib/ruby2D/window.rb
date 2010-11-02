@@ -14,7 +14,7 @@ module Window
     @@name = name
   end
   def resize w, h
-    raise 'Invalid size : ' + [w, h].inspect unless w>0&&h>0
+    fail Errno::EDOM unless w>0&&h>0
     if @@window
       GLUT.ReshapeWindow w, h
     else

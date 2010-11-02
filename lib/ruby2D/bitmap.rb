@@ -30,14 +30,14 @@ class Bitmap
         @real_size = hash[:real_size]||0
         @data = hash[:data]||[]
       else
-        fail 'Argument error in Bitmap#initialize'
+        fail TypeError
       end
     when 2 # Integer * 2
       @width, @height = *args
     when 3 # Integer * 3
       @width, @height, @name = *args
     else
-      fail 'Bad number of arguments in Bitmap#initialize'
+      fail ArgumentError, 'wrong number of arguments'
     end
     @name ||= ''
     @real_size = 2**Math.log2([@width, @height].max).ceil
