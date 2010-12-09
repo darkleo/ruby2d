@@ -1,13 +1,13 @@
 module Ruby2D
-  Graphics = Class.new do
-  def initialize
-    @display_list = []
-    
-    @frames = 0
-    @framerate = 60
-    @timebase = 0
-    @framebase = 0
-  end
+module Graphics
+  extend self
+  
+  @display_list = []
+  
+  @frames = 0
+  @framerate = 60
+  @timebase = 0
+  @framebase = 0
   
   attr_reader :frametotal
   attr_accessor :frames, :framerate, :timebase, :framebase
@@ -46,5 +46,5 @@ module Ruby2D
       sleep 0.01
     end
   end
-end.new
+end
 end

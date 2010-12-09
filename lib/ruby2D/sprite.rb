@@ -93,32 +93,34 @@ class Sprite < Graphic
     @bitmap = bitmap
     @rect = Rect.new(0, 0, @bitmap.width, @bitmap.height)
   end
-
+  def zoom= zoom
+    @zoom_x, @zoom_y = zoom, zoom
+  end
+  
   def output # intern use ONLY
     return unless @bitmap
     return unless @visible
     return if @opacity == 0
-
+    
     GL.LoadIdentity
     GL.Translate(@x, -@y, 0)
     GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
     GL.Rotate(@angle, 0, 0, 1) if @angle != 0
     GL.Translate(-@ox, @oy, 0)
     
-    GL.Color 1, 1, 1, @opacity/100.0
+    GL.Color 1.0, 1.0, 1.0, @opacity/100.0
     
     @bitmap.use
     
     w = @rect.width
     h = @rect.height
-    s = @bitmap.real_size.to_f
-    c1, c2, c3, c4 = *@rect.coords.map {|t| [t[0]/s, t[1]/s]}
+    c1, c2, c3, c4 = *@rect.coords.map {|t| [t[0].to_f/w, t[1].to_f/h]}
     
     GL.Begin(GL::QUADS)
-    GL.TexCoord2f(*c1) ; GL.Vertex3f(0, 0, 0)
-    GL.TexCoord2f(*c2) ; GL.Vertex3f(w, 0, 0)
-    GL.TexCoord2f(*c3) ; GL.Vertex3f(w, -h, 0)
-    GL.TexCoord2f(*c4) ; GL.Vertex3f(0, -h, 0)
+     GL.TexCoord2f(*c1) ; GL.Vertex3f(0, 0, 0)
+     GL.TexCoord2f(*c2) ; GL.Vertex3f(w, 0, 0)
+     GL.TexCoord2f(*c3) ; GL.Vertex3f(w, -h, 0)
+     GL.TexCoord2f(*c4) ; GL.Vertex3f(0, -h, 0)
     GL.End
   end
   

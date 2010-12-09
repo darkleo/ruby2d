@@ -48,7 +48,7 @@ module Ruby2D
   
   def run &block
     GLUT.Init
-    GLUT.InitDisplayMode(GLUT::RGBA|GLUT::DOUBLE|GLUT::ALPHA|GLUT::DEPTH)
+    GLUT.InitDisplayMode GLUT::RGBA|GLUT::DOUBLE|GLUT::ALPHA|GLUT::DEPTH
     
     GLUT.InitWindowSize @width, @height
     GLUT.InitWindowPosition @x, @y
@@ -70,19 +70,22 @@ module Ruby2D
     GLUT.PassiveMotionFunc(@procs[:mouse_passive])
     GLUT.MotionFunc(@procs[:motion])
     # Other
-    GLUT.IdleFunc(@procs[:idle])
+    #~ GLUT.IdleFunc(@procs[:idle])
     GLUT.EntryFunc(@procs[:entry])
-    # ?
-    #~ GLUT.DialsFunc(@procs[:dials])
     #~ GLUT.VisibilityFunc(@procs[:visibility])
     #~ GLUT.WindowStatusFunc(@procs[:window_status])
+    # ?
+    #~ GLUT.ButtonBoxFunc(@procs[:button_box])
+    #~ GLUT.DialsFunc(@procs[:dials])
+    #~ GLUT.WindowStatusFunc(@procs[:window_status])
     
-    GL.Enable(GL::BLEND)
-    GL.BlendFunc(GL::SRC_ALPHA, GL::ONE_MINUS_SRC_ALPHA)
-    #~ GL.BlendFunc(GL::SRC_ALPHA, GL::ONE)
-    #~ GL.BlendFunc(GL::ONE_MINUS_SRC_ALPHA, GL::ONE)
-    GL.Enable(GL::TEXTURE_2D)
-    #~ GL.Enable(GL::DEPTH_TEST)
+    GL.Enable GL::BLEND
+    GL.BlendFunc GL::SRC_ALPHA, GL::ONE_MINUS_SRC_ALPHA
+    #~ GL.BlendFunc GL::SRC_ALPHA, GL::ONE
+    #~ GL.BlendFunc GL::ONE_MINUS_SRC_ALPHA, GL::ONE
+    GL.Enable GL::TEXTURE_2D
+    #~ GL.Enable GL::DEPTH_TEST
+    GL.Disable GL::CULL_FACE
     
     Thread.new { yield block }
     GLUT.MainLoop()
@@ -103,6 +106,7 @@ module Ruby2D
     @height = height
   }
   @procs[:display] = lambda {
+    return unless @state
     GL.Clear(GL::COLOR_BUFFER_BIT|GL::DEPTH_BUFFER_BIT)
     #~ GL.Clear(GL::COLOR_BUFFER_BIT)
     Mutex.synchronize {
@@ -171,14 +175,16 @@ module Ruby2D
     Mouse.feed :x => x, :y => y
   }
   @procs[:idle] = lambda {
-    #~ return unless @@state
-    sleep 0.01 if rand(2)==1
+    sleep 0.01
     #~ GLUT.PostRedisplay()
   }
   @procs[:entry] = lambda {|state|
-    @state = state == 1
-    # 0:inactive / 1:active
+    @state = state == 1 # 0:left / 1:entered
   }
+  #~ @procs[:visibility] = lambda {|v|
+  #~ }
+  #~ @procs[:window_status] = lambda {|state|
+  #~ }
   end
   
   SpecialKeys = %w/F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12

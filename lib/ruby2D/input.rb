@@ -1,10 +1,10 @@
 module Ruby2D
-  # Handles input data from a keyboard.
-  Input = Class.new do
-  def initialize
-    @current = {}
-    @next    = {}
-  end
+# Handles input data from a keyboard.
+module Input
+  extend self
+  
+  @current = {}
+  @next    = {}
   
   # Updates input data.
   # 
@@ -104,5 +104,5 @@ module Ruby2D
     (1..9).each {|i| return i if press? i.to_s}
     0
   end
-end.new
+end
 end
