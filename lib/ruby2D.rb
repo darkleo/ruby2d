@@ -27,6 +27,8 @@ end
 # Ruby2D library
 require 'ruby2D/graphic'
 require 'ruby2D/sprite'
+require 'ruby2D/PNG'
+require 'ruby2D/BMP'
 require 'ruby2D/cache'
 require 'ruby2D/bitmap'
 require 'ruby2D/window'

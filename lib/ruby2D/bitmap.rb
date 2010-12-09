@@ -17,32 +17,27 @@ class Bitmap
     when 1 ## String || Hash
       case args[0]
       when String
-        hash = Ruby2D::Cache.load_bitmap args[0]
-        @width = hash[:width]
-        @height = hash[:height]
-        @real_size = hash[:real_size]
-        @data = hash[:data]
+        img = Ruby2D::Cache.load_bitmap args[0]
+        @width = img.width
+        @height = img.height
+        @data = img.data
       when Hash
         hash = args[0]
         @name = hash[:name]||''
         @width = hash[:width]||0
         @height = hash[:height]||0
-        @real_size = hash[:real_size]||0
-        @data = hash[:data]||[]
+        @data = hash[:data]
       else
         fail TypeError
       end
     when 2 # Integer * 2
       @width, @height = *args
-    when 3 # Integer * 3
-      @width, @height, @name = *args
     else
       fail ArgumentError, 'wrong number of arguments'
     end
     @name ||= ''
-    @real_size = 2**Math.log2([@width, @height].max).ceil
-    @data ||= "\x00"*@real_size**2*4
-    fail 'Invalid size' unless @data.size == @real_size**2*4
+    @data ||= "\x00"*@width*@height*4
+    fail 'Invalid size' unless @data.size == @width*@height*4
     @need_bind = true
   end
   
@@ -55,28 +50,29 @@ class Bitmap
     @tex_id ||= GL.GenTextures(1)[0]
     use
     return if @data.empty?
-    # blur_more = GL::LINEAR or GL::NEAREST
-    #~ GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::LINEAR)
-    #~ GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::LINEAR)
-    GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::NEAREST)
-    GL.TexParameteri(GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::NEAREST)
-    GL.TexImage2D(GL::TEXTURE_2D, 0, GL::RGBA, @real_size, @real_size,
-        0, GL::RGBA, GL::UNSIGNED_BYTE, @data)
+    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::NEAREST
+    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::NEAREST
+    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_WRAP_S,     GL::CLAMP_TO_EDGE
+    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_WRAP_T,     GL::CLAMP_TO_EDGE
+    GL.TexImage2D GL::TEXTURE_2D, 0, GL::RGBA, @width, @height,
+        0, GL::RGBA, GL::UNSIGNED_BYTE, @data
   end
 
   def get_pixel x, y
-    #~ begin
-      Color.rgba *@data[4*x+4*y*@real_size, 4].unpack('C*')
-    #~ rescue
-      #~ fail 'pixel out of range'
-    #~ end
+    begin
+      fail IndexError if x<0||x>=@width||y<0||y>=@height
+      Color.rgba *@data[4*x+4*y*@width, 4].unpack('C*')
+    rescue IndexError
+      fail 'pixel out of range'
+    end
   end
   def set_pixel x, y, c
-    #~ begin
-      @data[4*x.to_i+4*y.to_i*@real_size, 4] = c.to_rgba.pack 'C*'
-    #~ rescue
-      #~ fail 'pixel out of range'
-    #~ end
+    begin
+      fail IndexError if x<0||x>=@width||y<0||y>=@height
+      @data[4*x.to_i+4*y.to_i*@width, 4] = c.to_rgba.pack 'C*'
+    rescue IndexError
+      fail 'pixel out of range'
+    end
     @need_bind = true
   end
   
@@ -98,8 +94,9 @@ class Bitmap
     when :source
       h = [@height-rect.y, bitmap.height-rect.x, rect.height].min
       for j in 0...h
-        z_src  = 4*x+4*(y+j)*@real_size
-        z_dest = 4*rect.x+4*(rect.y+j)*bitmap.real_size
+        #~ z_src  = 4*x+4*(y+j)*@real_size
+        z_src  = 4*x+4*(y+j)*@width
+        z_dest = 4*rect.x+4*(rect.y+j)*bitmap.width
         w = [@width-rect.x, bitmap.width-rect.x, rect.width].min
         @data[z_src, 4*w] = bitmap.data[z_dest, 4*w]
       end
@@ -270,7 +267,7 @@ class Bitmap
     h = [@height-rect.y, rect.height].min
     full = str*w
     for j in 0...h
-      z = 4*rect.x+4*(rect.y+j)*@real_size
+      z = 4*rect.x+4*(rect.y+j)*@width
       @data[z, 4*w] = full
     end
     @need_bind = true
@@ -282,7 +279,7 @@ class Bitmap
     h = [@height-rect.y, rect.height].min
     full = "\x00"*4*w
     for j in 0...h
-      z = 4*rect.x+4*(rect.y+j)*@real_size
+      z = 4*rect.x+4*(rect.y+j)*@width
       @data[z, 4*w] = full
     end
     @need_bind = true

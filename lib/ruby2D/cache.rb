@@ -1,9 +1,9 @@
 module Ruby2D
-  Cache = Class.new do
-  def initialize
-    @data = {}
-    @local = ['']
-  end
+module Cache
+  extend self
+  
+  @data = {}
+  @local = ['']
   
   def load_bitmap name
     return @data[name] if @data.include? name
@@ -24,10 +24,10 @@ module Ruby2D
       case File.extname name
       when '.img'
         @data[name] = load_img path, name
-      when '.png'
-        @data[name] = load_png path, name
+      when '.png', '.PNG'
+        @data[name] = PNG.new path, name
       when '.bmp'
-        @data[name] = load_bmp path, name
+        @data[name] = BMP.new path, name
       when ''
       else
         return false
@@ -210,5 +210,5 @@ module Ruby2D
     struct[:data] = corrected.pack('C*')
     return struct
   end
-end.new
+end
 end
