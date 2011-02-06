@@ -1,7 +1,6 @@
 # Mandelbrot
 
-$:.insert 0, '../lib/'
-require 'ruby2d'
+require '../lib/ruby2D'
 require 'complex'
 
 Max = 100
@@ -30,6 +29,7 @@ def is_in_M2? x, y
   k
 end
 
+include Ruby2D
 Size = 256
 Window.name = 'Mandelbrot'
 Window.resize Size, Size
@@ -47,7 +47,7 @@ Window.run {
       next if k == Max
       @sprite.bitmap.set_pixel i, j, Color.rgb(0, 0, 50+205.0*k/Max)
       #~ @sprite.bitmap.draw_pixel i, j, Color.rgb(0, 0, 50+205.0*(1-0.85**k))
-      #~ Graphics.update
+      Graphics.update
     }
     Graphics.update
   }
