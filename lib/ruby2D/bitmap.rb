@@ -39,6 +39,7 @@ class Bitmap
     @data ||= "\x00"*@width*@height*4
     fail 'Invalid size' unless @data.size == @width*@height*4
     @need_bind = true
+    @tex_id = nil
   end
   
   def use

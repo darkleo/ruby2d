@@ -29,6 +29,7 @@ class Sprite < Graphic
       @zoom_y  = 100
       @opacity = 100
       @visible = true
+      @deleted = false
       @bitmap = Bitmap.new
       @rect = Rect.new @bitmap.width, @bitmap.height
     when 1
@@ -70,7 +71,6 @@ class Sprite < Graphic
     end
     create_id
     Ruby2D::Graphics.add self
-    @deleted = false
   end
   def dispose
     Ruby2D::Graphics.remove self
@@ -100,7 +100,7 @@ class Sprite < Graphic
   def output # intern use ONLY
     return unless @bitmap
     return unless @visible
-    return if @opacity == 0
+    return unless @opacity != 0
     
     GL.LoadIdentity
     GL.Translate(@x, -@y, 0)
@@ -129,6 +129,6 @@ class Sprite < Graphic
   @@Max_IDS ||= 0
   def create_id
     @id = @@Max_IDS += 1
-    @name ||= "Spr#{@id}"
+    @name ||= 'Spr' + @id
   end
 end
