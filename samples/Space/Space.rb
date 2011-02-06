@@ -1,26 +1,10 @@
 # Space
 # By Darkleo
 
-$:.insert 0, '../../lib/'
-require 'ruby2d'
-require 'ap' #awesome_printer
-
+require '../../lib/ruby2D'
+include Ruby2D
 Cache.add_location 'Space/'
 
-class P
-  attr_accessor :p, :v, :m
-  def initialize(pos, vit, mass)
-    @p = pos
-    @v = vit
-    @m = mass
-  end
-  def distance(point)
-    (@p - point.p).norm
-  end
-  def vect(point)
-    (@p - point.p).normalize!
-  end
-end
 class C
   attr_accessor :x, :y, :z
   def initialize(x=0, y=0, z=0)
@@ -51,46 +35,58 @@ class C
     return self
   end
 end
+class Planet
+  attr_accessor :position, :sprite
+  attr_accessor :pos, :vit, :mass
+  def initialize name, pos, vit, mass
+    @pos = pos
+    @vit = vit
+    @mass = mass
+    @sprite = Sprite.new
+    @sprite.bitmap = Bitmap.new(name+'.png')
+  end
+  def distance_from planet
+    (@pos - planet.pos).norm
+  end
+  def vect_to planet
+    (@pos - planet.pos).normalize!
+  end
+end
 
-#~ Graphics.framerate = 1.0/0
+#~Graphics.framerate = 1.0/0
 Window.name = 'Space'
 Window.run do
-  begin
   tstar = Bitmap.new('Star.bmp')
   150.times do
-    r = rand(10)+1
-    s = Sprite.new :bitmap => tstar,
-    :x => rand(640), :y => rand(480),
-    :ox => 64, :oy => 64, :zoom => r
+    s = Sprite.new
+    s.bitmap = tstar
+    s.x = rand(640)
+    s.y = rand(480)
+    s.ox = s.oy = 64
+    s.zoom = rand(10)+1
   end
-  s1 = Sprite.new :name => 'Earth',
-    :bitmap => Bitmap.new('Earth.png'),
-    :ox => 64, :oy => 64
-  s2 = Sprite.new :name => 'Moon',
-    :bitmap => Bitmap.new('Moon.png'),
-    :ox => 64, :oy => 64, :zoom => 33
-  #~ s2.set_update {@angle += 100*0.02}
-  p1 = P.new(C.new, C.new, 6e24) # Terre
-  p2 = P.new(C.new(3e5), C.new(0, -30), 2e17) # Lune
+  
+  earth = Planet.new 'Earth', C.new, C.new, 6e24
+  earth.sprite.ox = earth.sprite.oy = 64
+  moon = Planet.new 'Moon', C.new(3e5), C.new(0, -30), 2e17
+  moon.sprite.ox = moon.sprite.oy = 64
+  moon.sprite.zoom = 33
+  
   G = 6.674e-11
   dt = 100
   
   loop do
-    f = G*p1.m*p2.m/((p1.distance(p2)*1000)**2)
-    d = p1.vect p2
-    p1.v -= d*f*dt/p1.m
-    p2.v += d*f*dt/p2.m
-    p1.p += p1.v*dt
-    p2.p += p2.v*dt
-    s1.x = 320+p1.p.x/1000.to_i
-    s1.y = 240+p1.p.y/1000.to_i
-    s2.x = 320+p2.p.x/1000.to_i
-    s2.y = 240+p2.p.y/1000.to_i
+    f = G*earth.mass*moon.mass/((earth.distance_from(moon)*1000)**2)
+    d = earth.vect_to moon
+    earth.vit -= d*f*dt/earth.mass
+    moon.vit += d*f*dt/moon.mass
+    earth.pos += earth.vit*dt
+    moon.pos += moon.vit*dt
+    earth.sprite.x = 320+earth.pos.x/1000.to_i
+    earth.sprite.y = 240+earth.pos.y/1000.to_i
+    moon.sprite.x = 320+moon.pos.x/1000.to_i
+    moon.sprite.y = 240+moon.pos.y/1000.to_i
     
     Graphics.update
-  end
-  rescue => error
-    p error
-    ap error.backtrace
   end
 end
