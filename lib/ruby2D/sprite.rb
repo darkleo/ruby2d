@@ -129,6 +129,6 @@ class Sprite < Graphic
   @@Max_IDS ||= 0
   def create_id
     @id = @@Max_IDS += 1
-    @name ||= 'Spr' + @id
+    @name ||= 'Spr' + @id.to_s
   end
 end
