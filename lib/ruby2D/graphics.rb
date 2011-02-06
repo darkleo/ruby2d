@@ -5,13 +5,21 @@ module Graphics
   @display_list = []
   
   @frames = 0
-  @framerate = 60
-  @timebase = 0
-  @framebase = 0
+  @last_time = 0
+  @fps_count = 1
+  @fps = 0
+  @fps_in_title = true#$DEBUG
   
-  attr_reader :frametotal
-  attr_accessor :frames, :framerate, :timebase, :framebase
+  attr_reader :frames, :framerate
+  attr_accessor :fps_in_title
   attr_accessor :need_bind, :need_update
+  
+  def framerate= fps
+    @framerate = fps
+    @waiting_time = 950.0/fps
+    @fps_delay = 2*fps/3
+  end
+  self.framerate = 60
 
   def all
     @display_list
@@ -33,18 +41,18 @@ module Graphics
   end
 
   def update force=false
-    @frames += 1
-    #~ return if force or @frames%2==0
-    loop do
-      Mutex.synchronize do
-        if @need_update
-          @need_update = false
-          @need_bind = true
-          return
-        end
-      end
-      sleep 0.01
+    now = GLUT.Get GLUT::ELAPSED_TIME
+    while now - @last_time < @waiting_time
+      now = GLUT.Get GLUT::ELAPSED_TIME
     end
+    @frames += 1
+    if @frames % @fps_delay == 0
+      @fps = @fps_delay*1000/(now-@fps_count)
+      @fps_count = now
+      Window.name_suffix = " - #@fps fps" if @fps_in_title
+    end
+    @last_time = now
+    Mutex.synchronize { @need_bind = true }
   end
 end
 end

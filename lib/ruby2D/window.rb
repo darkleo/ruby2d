@@ -2,44 +2,43 @@ module Ruby2D
   Window = Class.new do
   def initialize
     @name = 'OpenGL'
+    @name_suffix = ''
     @width = 640
     @height = 480
     @x = 192
     @y = 144
     @fullscreen = false
     @window = nil
+		@to_set = {}
     
     create_procs
   end
   
   def name= name
-    #~ GLUT.SetWindowTitle name if @@window
+    @to_set[:name] = name
     @name = name
   end
+  def name_suffix= name
+    @to_set[:name_suffix] = name
+    @name_suffix = name
+  end
   def resize w, h
-    fail Errno::EDOM unless w>0&&h>0
-    if @window
-      GLUT.ReshapeWindow w, h
-    else
-      @width, @height = w, h
-    end
+    fail Errno::EDOM unless w>0 && h>0
+		@to_set[:size] = [w, h]
+		@width, @height = w, h
   end
   def size
     [@width, @height]
   end
   def move x, y
-    GLUT.PositionWindow x, y if @window
+		@to_set[:position] = [x,y]
     @x, @y = x, y
   end
   def position
     [@x, @y]
   end
   def fullscreen b=true
-    if b
-      GLUT.FullScreen if @window
-    else
-      resize @width, @height
-    end
+		@to_set[:fullscreen] = b
     @fullscreen = b
   end
   def fullscreen?
@@ -59,7 +58,7 @@ module Ruby2D
     
     GLUT.ReshapeFunc @procs[:reshape]
     GLUT.DisplayFunc @procs[:display]
-    GLUT.TimerFunc 0, @procs[:timer], 0
+    #GLUT.TimerFunc 0, @procs[:timer], 0
     # Keyboard
     GLUT.KeyboardFunc(@procs[:keyboard])
     GLUT.KeyboardUpFunc(@procs[:keyboard_up])
@@ -70,8 +69,8 @@ module Ruby2D
     GLUT.PassiveMotionFunc(@procs[:mouse_passive])
     GLUT.MotionFunc(@procs[:motion])
     # Other
-    #~ GLUT.IdleFunc(@procs[:idle])
-    GLUT.EntryFunc(@procs[:entry])
+    GLUT.IdleFunc(@procs[:idle])
+    #~ GLUT.EntryFunc(@procs[:entry])
     #~ GLUT.VisibilityFunc(@procs[:visibility])
     #~ GLUT.WindowStatusFunc(@procs[:window_status])
     # ?
@@ -106,7 +105,6 @@ module Ruby2D
     @height = height
   }
   @procs[:display] = lambda {
-    return unless @state
     GL.Clear(GL::COLOR_BUFFER_BIT|GL::DEPTH_BUFFER_BIT)
     #~ GL.Clear(GL::COLOR_BUFFER_BIT)
     Mutex.synchronize {
@@ -119,11 +117,9 @@ module Ruby2D
     #~ GL.Flush()
     GLUT.SwapBuffers()
   }
-  @procs[:timer] = lambda {|i|
-    Mutex.synchronize {Graphics.need_update = true}
-    GLUT.PostRedisplay()
-    GLUT.TimerFunc(950.0/Graphics.framerate, @procs[:timer], i)
-  }
+  #@procs[:timer] = lambda {|i|
+    #GLUT.TimerFunc(10, @procs[:timer], i)
+  #}
   @procs[:keyboard] = lambda {|key,x,y|
     exit if key == ?\e
     Input.feed key => :trig
@@ -147,11 +143,6 @@ module Ruby2D
   }
   @procs[:special_keyboard] = lambda {|key,x,y|
     Input.feed get_special_key(key) => :trig
-    # GLUT::...
-    # KEY_F1 => KEY_F12
-    # KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP
-    # KEY_PAGE_UP, KEY_PAGE_DOWN
-    # KEY_END, KEY_HOME, KEY_INSERT
   }
   @procs[:special_keyboard_up] = lambda {|key,x,y|
     Input.feed get_special_key(key) => :release
@@ -175,12 +166,30 @@ module Ruby2D
     Mouse.feed :x => x, :y => y
   }
   @procs[:idle] = lambda {
-    sleep 0.01
-    #~ GLUT.PostRedisplay()
+    GLUT.PostRedisplay()
+		@to_set.each_pair do |key, value|
+			case key
+			when :name
+			  GLUT.SetWindowTitle value+@name_suffix
+			when :name_suffix
+			  GLUT.SetWindowTitle @name+value 
+			when :size
+			  GLUT.ReshapeWindow *value
+			when :position
+				GLUT.PositionWindow *value
+			when :fullscreen
+			  if value
+          GLUT.FullScreen
+        else
+          resize @width, @height
+        end
+			end
+		end
+		@to_set.clear
   }
-  @procs[:entry] = lambda {|state|
-    @state = state == 1 # 0:left / 1:entered
-  }
+  #@procs[:entry] = lambda {|state|
+    #@state = state == 1 # 0:left / 1:entered
+  #}
   #~ @procs[:visibility] = lambda {|v|
   #~ }
   #~ @procs[:window_status] = lambda {|state|
