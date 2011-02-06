@@ -4,9 +4,8 @@
 # Extern libraries
 require 'opengl'
 require 'glut'
-require 'fmod'
 require 'zlib'
-require 'Win32API'
+require 'Win32API' if RUBY_PLATFORM =~ /mswin/
 
 # Stuff ...
 Thread.abort_on_exception = true
@@ -15,25 +14,31 @@ $>.sync = true
 # Ruby2D
 module Ruby2D
   # Popup
-  MessageBox = Win32API.new 'user32','MessageBox','lppl','i'
-  def self.popup *args
-    puts *args
-    MessageBox.call 0, args*"\n", 'Popup :', 0
-    nil
+  if RUBY_PLATFORM =~ /mswin/
+    MessageBox = Win32API.new 'user32','MessageBox','lppl','i'
+    def self.popup *args
+      puts *args
+      MessageBox.call 0, args*"\n", 'Popup :', 0
+      nil
+    end
+  else
+    def self.popup *args
+      puts *args
+    end
   end
   Mutex = Mutex.new
 end
 
 # Ruby2D library
-require 'ruby2D/graphic'
-require 'ruby2D/sprite'
-require 'ruby2D/PNG'
-require 'ruby2D/BMP'
-require 'ruby2D/cache'
-require 'ruby2D/bitmap'
-require 'ruby2D/window'
-require 'ruby2D/mouse'
-require 'ruby2D/input'
-require 'ruby2D/graphics'
-require 'ruby2D/shapes'
-require 'ruby2D/color'
+require_relative 'ruby2D/graphic'
+require_relative 'ruby2D/sprite'
+require_relative 'ruby2D/PNG'
+require_relative 'ruby2D/BMP'
+require_relative 'ruby2D/cache'
+require_relative 'ruby2D/bitmap'
+require_relative 'ruby2D/window'
+require_relative 'ruby2D/mouse'
+require_relative 'ruby2D/input'
+require_relative 'ruby2D/graphics'
+require_relative 'ruby2D/shapes'
+require_relative 'ruby2D/color'
