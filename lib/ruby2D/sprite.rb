@@ -1,3 +1,4 @@
+module Ruby2D
 class Sprite < Graphic
   attr_reader :name, :id
   attr_accessor :x, :y
@@ -96,6 +97,10 @@ class Sprite < Graphic
   def zoom= zoom
     @zoom_x, @zoom_y = zoom, zoom
   end
+  def zoom
+    fail 'Invalid use of self.zoom : @zoom_x != @zoom_y' if @zoom_x != @zoom_y
+    @zoom_x
+  end
   
   def output # intern use ONLY
     return unless @bitmap
@@ -104,8 +109,8 @@ class Sprite < Graphic
     
     GL.LoadIdentity
     GL.Translate(@x, -@y, 0)
-    GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
     GL.Rotate(@angle, 0, 0, 1) if @angle != 0
+    GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
     GL.Translate(-@ox, @oy, 0)
     
     GL.Color 1.0, 1.0, 1.0, @opacity/100.0
@@ -131,4 +136,5 @@ class Sprite < Graphic
     @id = @@Max_IDS += 1
     @name ||= 'Spr' + @id.to_s
   end
+end
 end
