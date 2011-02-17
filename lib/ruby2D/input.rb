@@ -42,7 +42,8 @@ module Input
   # If the button is being pressed, returns +TRUE+.
   # If not, returns +FALSE+.
   def trigger? key
-    @current[key.to_s] == 1 rescue false
+    state = @current[key.to_s]
+    state ? state == 1 : false
   end
 
   # Determines whether the button _key_ is currently being pressed.
@@ -50,7 +51,8 @@ module Input
   # If the button is being pressed, returns +TRUE+.
   # If not, returns +FALSE+.
   def press? key
-    @current[key.to_s] > 0 rescue false
+    state = @current[key.to_s]
+    state ? state > 0 : false
   end
 
   # Determines whether the button _key_ is currently being releassed.
@@ -58,7 +60,8 @@ module Input
   # If the button is being released, returns +TRUE+.
   # If not, returns +FALSE+.
   def release? key
-    @current[key.to_s] == -1 rescue false
+    state = @current[key.to_s]
+    state ? state == -1 : false
   end
 
   # Determines whether the button _key_ is being pressed again.
@@ -68,8 +71,8 @@ module Input
   # If the button is being pressed, returns +TRUE+.
   # If not, returns +FALSE+.
   def repeat? key
-    i = key.to_s
-    (@current[i] > 8 and @current[i]%4 == 0) rescue false
+    state = @current[key.to_s]
+    state ? (state > 8 and state%4 == 0) : false
   end
 
   # Checks the status of the directional buttons,
@@ -79,7 +82,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir4
-    (1..4).each {|i| return 2*i if press? (2*i).to_s}
+    (1..4).each {|i| return 2*i if press?((2*i).to_s)}
     0
   end
 
@@ -90,7 +93,7 @@ module Input
   # If no directional buttons are being pressed (or the equivalent),
   # returns 0.
   def dir8
-    (1..4).each {|i| return 2*i-1 if press? (2*i-1).to_s}
+    (1..4).each {|i| return 2*i-1 if press?((2*i-1).to_s)}
     dir4
   end
 
