@@ -7,7 +7,7 @@ module Cache
   
   def load_bitmap name
     return @data[name] if @data.include? name
-    @local.each {|path| load_with_path path, name }
+    @local.reverse_each {|path| load_with_path path, name }
     return @data[name] if @data.include? name
     fail Errno::ENOENT, name
   end
@@ -82,7 +82,7 @@ module Cache
         end
       end
       blank = [0]*4*struct[:real_size]
-      (struct[:real_size]-struct[:height]).times {corrected.push *blank} # cause of too deep stack level
+      (struct[:real_size]-struct[:height]).times {corrected.push(*blank)} # cause of too deep stack level
     when 3 # PLTE
       # p [@plte[3*i], @plte[3*i+1], @plte[3*i+2]]
 #~       p array
@@ -111,11 +111,11 @@ module Cache
           corrected << array[z+2] # B
           corrected << array[z+3] # A
         end
-        corrected.push *blank
+        corrected.push(*blank)
       end
       blank = [0]*4*struct[:real_size]
       # cause of too deep stack level
-      (struct[:real_size]-struct[:height]).times {corrected.push *blank}
+      (struct[:real_size]-struct[:height]).times {corrected.push(*blank)}
     when 7 # RGB + one alpha
       blank = [0]*4*(struct[:real_size]-struct[:width])
       for y in 0...struct[:height]
@@ -130,11 +130,11 @@ module Cache
             corrected << 255 # A
           end
         end
-        corrected.push *blank
+        corrected.push(*blank)
       end
       blank = [0]*4*struct[:real_size]
       # cause of too deep stack level
-      (struct[:real_size]-struct[:height]).times {corrected.push *blank}
+      (struct[:real_size]-struct[:height]).times {corrected.push(*blank)}
     end
     struct[:data] = corrected.pack('C*')
 
@@ -200,13 +200,13 @@ module Cache
     for y in 0...(struct[:height])
       for x in 0...(struct[:width])
         z = (struct[:height]-y-1)*struct[:width]*3 + 3*x
-        corrected.push *data[z,3].reverse
+        corrected.push(*data[z,3].reverse)
         corrected << 255
       end
-      corrected.push *blank
+      corrected.push(*blank)
     end
     blank = [0]*4*struct[:real_size]
-    (struct[:real_size]-struct[:height]).times {corrected.push *blank} # cause of too deep stack level
+    (struct[:real_size]-struct[:height]).times {corrected.push(*blank)} # cause of too deep stack level
     struct[:data] = corrected.pack('C*')
     return struct
   end

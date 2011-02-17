@@ -17,13 +17,13 @@ module Ruby2D
   if RUBY_PLATFORM =~ /mswin/
     MessageBox = Win32API.new 'user32','MessageBox','lppl','i'
     def self.popup *args
-      puts *args
+      puts(*args)
       MessageBox.call 0, args*"\n", 'Popup :', 0
       nil
     end
   else
     def self.popup *args
-      puts *args
+      puts(*args)
     end
   end
   Mutex = Mutex.new

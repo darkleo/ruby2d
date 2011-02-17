@@ -9,7 +9,7 @@ module Ruby2D
     @y = 144
     @fullscreen = false
     @window = nil
-		@to_set = {}
+    @to_set = {}
     
     create_procs
   end
@@ -24,8 +24,8 @@ module Ruby2D
   end
   def resize w, h
     fail Errno::EDOM unless w>0 && h>0
-		@to_set[:size] = [w, h]
-		@width, @height = w, h
+    @to_set[:size] = [w, h]
+    @width, @height = w, h
   end
   def size
     [@width, @height]
@@ -105,14 +105,14 @@ module Ruby2D
     @height = height
   }
   @procs[:display] = lambda {
-    GL.Clear(GL::COLOR_BUFFER_BIT|GL::DEPTH_BUFFER_BIT)
-    #~ GL.Clear(GL::COLOR_BUFFER_BIT)
-    Mutex.synchronize {
+    #~ GL.Clear(GL::COLOR_BUFFER_BIT|GL::DEPTH_BUFFER_BIT)
+    GL.Clear(GL::COLOR_BUFFER_BIT)
+    #~ Mutex.synchronize {
       if Graphics.need_bind
         ObjectSpace.each_object(Graphic) {|g| g.bitmap.bind}
         Graphics.need_bind = false
       end
-    }
+    #~ }
     Graphics.all.each {|graphic| graphic.output}
     #~ GL.Flush()
     GLUT.SwapBuffers()
@@ -168,22 +168,22 @@ module Ruby2D
   @procs[:idle] = lambda {
     GLUT.PostRedisplay()
 		@to_set.each_pair do |key, value|
-			case key
-			when :name
-			  GLUT.SetWindowTitle value+@name_suffix
-			when :name_suffix
-			  GLUT.SetWindowTitle @name+value 
-			when :size
-			  GLUT.ReshapeWindow *value
-			when :position
-				GLUT.PositionWindow *value
-			when :fullscreen
-			  if value
+      case key
+      when :name
+        GLUT.SetWindowTitle value+@name_suffix
+      when :name_suffix
+        GLUT.SetWindowTitle @name+value 
+      when :size
+        GLUT.ReshapeWindow(*value)
+      when :position
+        GLUT.PositionWindow(*value)
+      when :fullscreen
+        if value
           GLUT.FullScreen
         else
           resize @width, @height
         end
-			end
+      end
 		end
 		@to_set.clear
   }

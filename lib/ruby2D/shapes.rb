@@ -1,3 +1,4 @@
+module Ruby2D
 # A superclass that handles shapes like squares, rectangles, discs...
 class Shape
   attr_accessor :x, :y
@@ -147,4 +148,5 @@ class Disc < Shape
   def === *args
     (args[0][0]-@x)**2+(args[0][1]-@y)**2 <= @radius**2
   end
+end
 end

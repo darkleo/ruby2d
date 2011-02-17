@@ -1,3 +1,4 @@
+module Ruby2D
 class Color
   attr_accessor :r, :g, :b, :a
   private_class_method :new
@@ -13,7 +14,7 @@ class Color
   end
   def self.html s
     s =~ /#((..){3,4})/
-    new *[$1].pack('H*').unpack('C*')
+    new(*[$1].pack('H*').unpack('C*'))
   end
   
   def to_html alpha=true
@@ -35,6 +36,7 @@ class Color
   def self.rand_a
     new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
   end
+end
 end
 
 # TODO : Add default colors

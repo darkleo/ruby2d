@@ -1,3 +1,4 @@
+module Ruby2D
 ImageFile ||= Class.new {attr_reader :width, :height, :real_size, :data}
 class BMP < ImageFile
   def initialize path, name
@@ -24,9 +25,10 @@ class BMP < ImageFile
     # BGR => RGB & miror y
     data.each_slice(3*@width) do |line|
       temp = []
-      line.each_slice(3) {|pixel| temp.push *pixel.reverse << 255}
-      corrected = temp.push *corrected
+      line.each_slice(3) {|pixel| temp.push(*pixel.reverse << 255)}
+      corrected = temp.push(*corrected)
     end
     corrected.pack 'C*'
   end
+end
 end

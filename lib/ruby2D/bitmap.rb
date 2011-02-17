@@ -1,3 +1,4 @@
+module Ruby2D
 class Bitmap
   attr_reader :width, :height
   attr_reader :real_size, :data #...
@@ -62,7 +63,7 @@ class Bitmap
   def get_pixel x, y
     begin
       fail IndexError if x<0||x>=@width||y<0||y>=@height
-      Color.rgba *@data[4*x+4*y*@width, 4].unpack('C*')
+      Color.rgba(*@data[4*x+4*y*@width, 4].unpack('C*'))
     rescue IndexError
       fail 'pixel out of range'
     end
@@ -285,4 +286,5 @@ class Bitmap
     end
     @need_bind = true
   end
+end
 end
