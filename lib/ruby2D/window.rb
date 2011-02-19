@@ -109,7 +109,7 @@ module Ruby2D
     GL.Clear(GL::COLOR_BUFFER_BIT)
     #~ Mutex.synchronize {
       if Graphics.need_bind
-        ObjectSpace.each_object(Graphic) {|g| g.bitmap.bind}
+        ObjectSpace.each_object(Graphic) {|g| g.bitmap.bind rescue nil}
         Graphics.need_bind = false
       end
     #~ }
@@ -152,6 +152,8 @@ module Ruby2D
     when 0 ; nkey = Mouse::Left
     when 1 ; nkey = Mouse::Middle
     when 2 ; nkey = Mouse::Right
+    when 3 ; nkey = Mouse::Wheel_Up
+    when 4 ; nkey = Mouse::Wheel_Down
     end
     case state
     when 0 ; nstate = :down
