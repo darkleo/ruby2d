@@ -8,16 +8,16 @@ module Graphics
   @last_time = 0
   @fps_count = 1
   @fps = 0
+  @fps_in_title = false
   
   attr_reader :frames, :framerate
   attr_accessor :fps_in_title
   attr_accessor :need_bind, :need_update
   
-  def framerate= fps, in_title=false
+  def framerate= fps
     @framerate = fps
     @waiting_time = 950.0/fps
     @fps_delay = fps == 1.0/0 ? 1000 : 2*fps/3
-    @fps_in_title = in_title
   end
   self.framerate = 60
 
