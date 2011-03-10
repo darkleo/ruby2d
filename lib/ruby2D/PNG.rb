@@ -58,7 +58,7 @@ class PNG < ImageFile
       #~ else
         #~ @px_trns = *data.unpack('n*')
       #~ end
-    when 'tEXt', 'tIME', 'pHYs', 'gAMA', 'sBIT'
+    when 'tEXt', 'tIME', 'pHYs', 'gAMA', 'sBIT', 'zTXt', 'iTXt'
       #~ # Normalement peu importants
     else
       p data

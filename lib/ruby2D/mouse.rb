@@ -133,7 +133,6 @@ module Mouse
   def drag? key
     @drag[key]
   end
-  
   def drop? key
     @drop[key]
   end
