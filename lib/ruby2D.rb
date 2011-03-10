@@ -31,6 +31,7 @@ end
 
 # Ruby2D library
 require_relative 'ruby2D/graphic'
+require_relative 'ruby2D/frame'
 require_relative 'ruby2D/sprite'
 require_relative 'ruby2D/PNG'
 require_relative 'ruby2D/BMP'

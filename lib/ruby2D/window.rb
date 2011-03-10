@@ -31,13 +31,13 @@ module Ruby2D
     [@width, @height]
   end
   def move x, y
-		@to_set[:position] = [x,y]
+	  @to_set[:position] = [x,y]
     @x, @y = x, y
   end
   def position
     [@x, @y]
   end
-  def fullscreen b=true
+  def fullscreen= b=true
 		@to_set[:fullscreen] = b
     @fullscreen = b
   end
@@ -47,13 +47,14 @@ module Ruby2D
   
   def run &block
     GLUT.Init
-    GLUT.InitDisplayMode GLUT::RGBA|GLUT::DOUBLE|GLUT::ALPHA|GLUT::DEPTH
+    GLUT.InitDisplayMode GLUT::RGBA|GLUT::DOUBLE|GLUT::ALPHA
     
     GLUT.InitWindowSize @width, @height
-    GLUT.InitWindowPosition @x, @y
+    GLUT.InitWindowPosition((GLUT.Get(GLUT::SCREEN_WIDTH)-@width)/2,
+                          (GLUT.Get(GLUT::SCREEN_HEIGHT)-@height)/2)
     @window = GLUT.CreateWindow @name
     # TODO : change icon
-    #~ Glut.glutSetIconTitle('favicon.ico')
+    Glut.glutSetIconTitle('favicon.ico')
     GLUT.FullScreen if @fullscreen
     
     GLUT.ReshapeFunc @procs[:reshape]
@@ -83,7 +84,6 @@ module Ruby2D
     #~ GL.BlendFunc GL::SRC_ALPHA, GL::ONE
     #~ GL.BlendFunc GL::ONE_MINUS_SRC_ALPHA, GL::ONE
     GL.Enable GL::TEXTURE_2D
-    #~ GL.Enable GL::DEPTH_TEST
     GL.Disable GL::CULL_FACE
     
     Thread.new { yield block }
@@ -105,16 +105,12 @@ module Ruby2D
     @height = height
   }
   @procs[:display] = lambda {
-    #~ GL.Clear(GL::COLOR_BUFFER_BIT|GL::DEPTH_BUFFER_BIT)
     GL.Clear(GL::COLOR_BUFFER_BIT)
-    #~ Mutex.synchronize {
-      if Graphics.need_bind
-        ObjectSpace.each_object(Graphic) {|g| g.bitmap.bind rescue nil}
-        Graphics.need_bind = false
-      end
-    #~ }
-    Graphics.all.each {|graphic| graphic.output}
-    #~ GL.Flush()
+    if Graphics.need_bind
+      ObjectSpace.each_object(Graphic) {|g| g.bitmap.bind rescue nil}
+      Graphics.need_bind = false
+    end
+    Graphics.main_frame.output
     GLUT.SwapBuffers()
   }
   #@procs[:timer] = lambda {|i|
