@@ -26,10 +26,10 @@ module Ruby2D
       puts(*args)
     end
   end
-  Mutex = Mutex.new
 end
 
 # Ruby2D library
+require_relative 'ruby2D/color'
 require_relative 'ruby2D/graphic'
 require_relative 'ruby2D/frame'
 require_relative 'ruby2D/sprite'
@@ -42,4 +42,3 @@ require_relative 'ruby2D/mouse'
 require_relative 'ruby2D/input'
 require_relative 'ruby2D/graphics'
 require_relative 'ruby2D/shapes'
-require_relative 'ruby2D/color'
