@@ -21,20 +21,21 @@ class Sprite < Graphic
     @zoom_x  = 100
     @zoom_y  = 100
     @opacity = 100
+    @color = Color.gray 255
     @visible = true
     @disposed = false
     case args.size
     when 0 # Default
-      @bitmap = Bitmap.new
+      self.bitmap = Bitmap.new
       Ruby2D::Graphics.main_frame << self
     when 1
       case args[0]
       when Frame
         args[0] << self
         @belongs_to = args[0]
-        @bitmap = Bitmap.new
+        self.bitmap = Bitmap.new
       when Bitmap
-        @bitmap = args[0]
+        self.bitmap = args[0]
         Ruby2D::Graphics.main_frame << self
       else
         fail TypeError
@@ -42,7 +43,7 @@ class Sprite < Graphic
     when 2
       args[0] << self
       @belongs_to = args[0]
-      @bitmap = args[1]
+      self.bitmap = args[1]
     else
       fail ArgumentError, 'wrong number of arguments'
     end
@@ -59,8 +60,9 @@ class Sprite < Graphic
     @rect = Rect.new(0, 0, @bitmap.width, @bitmap.height)
   end
   
-  def output # intern use ONLY
+  def output# intern use ONLY
     return if @disposed
+    return unless @rect
     return unless @bitmap
     return unless @visible
     return unless @opacity != 0
@@ -70,8 +72,9 @@ class Sprite < Graphic
     GL.Rotate(@angle, 0, 0, 1) if @angle != 0
     GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
     GL.Translate(-@ox, @oy, 0)
-    GL.Color(1.0, 1.0, 1.0, @opacity/100.0) # TODO : @color
+    GL.Color(@color.r/255.0, @color.g/255.0, @color.b/255.0, @opacity/100.0)
     
+    #~ @bitmap.bind if bind
     @bitmap.use
     
     w = @rect.width

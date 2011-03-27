@@ -12,6 +12,7 @@ class Bitmap
   # * x, y, width, height, ox, oy, angle
   # * a Hash with all or part of the args
   def initialize *args
+    @need_bind = true
     case args.size
     when 0
       @width, @height = 1, 1
@@ -39,27 +40,26 @@ class Bitmap
     @name ||= ''
     @data ||= "\x00"*@width*@height*4
     fail 'Invalid size' unless @data.size == @width*@height*4
-    @need_bind = true
-    @tex_id = nil
   end
   
   def use
-    GL.BindTexture GL::TEXTURE_2D, @tex_id
-  end
-  def bind
-    return unless @need_bind
-    @need_bind = false
-    @tex_id ||= GL.GenTextures(1)[0]
-    use
-    return if @data.empty?
-    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::NEAREST
-    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::NEAREST
-    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_WRAP_S,     GL::CLAMP_TO_EDGE
-    GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_WRAP_T,     GL::CLAMP_TO_EDGE
-    GL.TexImage2D GL::TEXTURE_2D, 0, GL::RGBA, @width, @height,
+    unless @tex_id
+      @tex_id = GL.GenTextures(1).first
+      GL.BindTexture GL::TEXTURE_2D, @tex_id
+      GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::NEAREST
+      GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::NEAREST
+      GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_WRAP_S,     GL::CLAMP_TO_EDGE
+      GL.TexParameter GL::TEXTURE_2D, GL::TEXTURE_WRAP_T,     GL::CLAMP_TO_EDGE
+    else
+      GL.BindTexture GL::TEXTURE_2D, @tex_id
+    end
+    if @need_bind
+      GL.TexImage2D GL::TEXTURE_2D, 0, GL::RGBA, @width, @height,
         0, GL::RGBA, GL::UNSIGNED_BYTE, @data
+      @need_bind = false
+    end
   end
-
+  
   def get_pixel x, y
     begin
       fail IndexError if x<0||x>=@width||y<0||y>=@height

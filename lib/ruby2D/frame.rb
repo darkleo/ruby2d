@@ -6,6 +6,7 @@ class Frame < Graphic
     @angle = 0
     @zoom_x = @zoom_y = 100
     @opacity = 100
+    @color = Color.gray 255
     @visible = true
     frame << self if frame
     #~ Ruby2D::Graphics.main_frame << self unless main
@@ -34,7 +35,7 @@ class Frame < Graphic
     GL.Rotate(@angle, 0, 0, 1) if @angle != 0
     GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
     GL.Translate(-@ox, @oy, 0)
-    GL.Color(1.0, 1.0, 1.0, @opacity/100.0) # TODO : @color
+    GL.Color(@color.r/255.0, @color.g/255.0, @color.b/255.0, @opacity/100.0)
     
     @list.each(&:output)
     

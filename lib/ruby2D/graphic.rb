@@ -3,6 +3,7 @@ class Graphic
   attr_reader :z
   attr_accessor :x, :y, :ox, :oy
   attr_accessor :angle, :zoom_x, :zoom_y
+  attr_accessor :color
   attr_accessor :opacity
   attr_accessor :visible
   attr_accessor :belongs_to
