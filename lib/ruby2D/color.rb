@@ -6,6 +6,12 @@ class Color
     @r, @g, @b, @a = r, g, b, a
   end
   
+  def self.gray g
+    new g, g, g
+  end
+  def self.grawa g, a
+    new g, g, g, a
+  end
   def self.rgb r, g, b
     new r, g, b
   end
@@ -15,6 +21,23 @@ class Color
   def self.html s
     s =~ /#((..){3,4})/
     new(*[$1].pack('H*').unpack('C*'))
+  end
+  def self.rainbow x
+    y = x*6.0 % 1
+    case x*6.0 % 6
+    when 0...1 # 255, 0, 0
+      Color.rgb(255, 255*y, 0)
+    when 1...2 # 255, 255, 0
+      Color.rgb(255-255*y, 255, 0)
+    when 2...3 # 0, 255, 0
+      Color.rgb(0, 255, 255*y)
+    when 3...4 # 0, 255, 255
+      Color.rgb(0, 255-255*y, 255)
+    when 4...5 # 0, 0, 255
+      Color.rgb(255*y, 0, 255)
+    when 5...6 # 255, 0, 255
+      Color.rgb(255, 0, 255-255*y)
+    end
   end
   
   def to_html alpha=true
@@ -33,7 +56,7 @@ class Color
     new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
   end
   # Return random color, with random alpha
-  def self.rand_a
+  def self.randa
     new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
   end
 end
