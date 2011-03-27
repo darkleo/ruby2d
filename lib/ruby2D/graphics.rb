@@ -6,9 +6,10 @@ module Graphics
   attr_accessor :main_frame
   
   @frame_count = 0
-  @fps_count = 0
   @fps = 0
+  @fps_last_time = 0
   @fps_in_title = false
+  @need_bind = true
   
   attr_reader :framerate
   attr_accessor :frame_count
@@ -20,8 +21,8 @@ module Graphics
   end
   def framerate= fps
     @framerate = fps
-    @waiting_time = 850.0/fps
-    @fps_delay = fps == 1.0/0 ? 1000 : 2*fps/3
+    @waiting_time = 1000/fps*0.8
+    @fps_delay = fps == 1.0/0 ? 500 : 2*fps/3
     if @frame_count == 0
       # Glut isn't launched yet
       @last_time = 0
@@ -37,14 +38,16 @@ module Graphics
       now = GLUT.Get GLUT::ELAPSED_TIME
     end
     @frame_count += 1
-    if @frame_count % @fps_delay == 0
-      @fps = @fps_delay*1000/(now-@fps_count)
-      @fps_count = 0
-      Window.name_suffix = " - #@fps fps" if @fps_in_title
-    end
     @last_time = now
-    #~ Mutex.synchronize { @need_bind = true }
-    @need_bind = true
+    return unless @fps_in_title
+    if @frame_count % @fps_delay == 0
+      @fps = @fps_delay*1000/(now-@fps_last_time)
+      Window.name_suffix = " - #@fps fps"
+      @fps_last_time = now
+    end
+  end
+  def output
+    @main_frame.output
   end
 end
 end

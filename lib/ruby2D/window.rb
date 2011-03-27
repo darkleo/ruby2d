@@ -47,14 +47,14 @@ module Ruby2D
   
   def run &block
     GLUT.Init
-    GLUT.InitDisplayMode GLUT::RGBA|GLUT::DOUBLE|GLUT::ALPHA
+    GLUT.InitDisplayMode GLUT::RGBA|GLUT::DOUBLE#|GLUT::ALPHA
     
     GLUT.InitWindowSize @width, @height
     GLUT.InitWindowPosition((GLUT.Get(GLUT::SCREEN_WIDTH)-@width)/2,
                           (GLUT.Get(GLUT::SCREEN_HEIGHT)-@height)/2)
     @window = GLUT.CreateWindow @name
     # TODO : change icon
-    Glut.glutSetIconTitle('favicon.ico')
+    #~ Glut.glutSetIconTitle('favicon.ico')
     GLUT.FullScreen if @fullscreen
     
     GLUT.ReshapeFunc @procs[:reshape]
@@ -79,6 +79,8 @@ module Ruby2D
     #~ GLUT.DialsFunc(@procs[:dials])
     #~ GLUT.WindowStatusFunc(@procs[:window_status])
     
+    #~ p GL.GetString GL::VERSION
+    #~ p GL.GetString GL::EXTENSIONS
     GL.Enable GL::BLEND
     GL.BlendFunc GL::SRC_ALPHA, GL::ONE_MINUS_SRC_ALPHA
     #~ GL.BlendFunc GL::SRC_ALPHA, GL::ONE
@@ -99,19 +101,16 @@ module Ruby2D
     GL.Viewport(0, 0,  width,  height)
     GL.MatrixMode(GL::PROJECTION)
     GL.LoadIdentity()
-    GL.Ortho(0.0, width, -height, 0.0, -1, 10_000)
+    GL.Ortho(0.0, width, -height, 0.0, -1, 1)
     GL.MatrixMode(GL::MODELVIEW)
     @width  = width
     @height = height
   }
   @procs[:display] = lambda {
-    GL.Clear(GL::COLOR_BUFFER_BIT)
-    if Graphics.need_bind
-      ObjectSpace.each_object(Graphic) {|g| g.bitmap.bind rescue nil}
-      Graphics.need_bind = false
-    end
-    Graphics.main_frame.output
+    GL.Clear GL::COLOR_BUFFER_BIT
+    Graphics.output
     GLUT.SwapBuffers()
+    GLUT.PostRedisplay()
   }
   #@procs[:timer] = lambda {|i|
     #GLUT.TimerFunc(10, @procs[:timer], i)
@@ -164,7 +163,8 @@ module Ruby2D
     Mouse.feed :x => x, :y => y
   }
   @procs[:idle] = lambda {
-    GLUT.PostRedisplay()
+    #~ GLUT.PostRedisplay()
+    return unless @to_set
 		@to_set.each_pair do |key, value|
       case key
       when :name
