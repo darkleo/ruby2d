@@ -47,6 +47,13 @@ class PNG < ImageFile
       fail 'PLTE Error : chunk length not divisible by 3' if data.size%3 != 0
       @plte = []
       data.unpack('C*').each_slice(3){|s|@plte << s}
+    when 'tRNS'
+      @trns = case @color_type
+      when 2
+        data.unpack('n*')
+      else
+        fail 'tRNS still not supported'
+      end
     when 'IDAT'
       @data += data
     when 'IEND'
@@ -121,7 +128,7 @@ class PNG < ImageFile
           end
           left = c
           line.push(*c)
-          corrected.push(*c << 255)
+          corrected.push(*c << (c == @trns ? 0 : 255))
           j += 1
         end
         i += 1
