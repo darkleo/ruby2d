@@ -1,6 +1,10 @@
 module Ruby2D
 class Color
   attr_accessor :r, :g, :b, :a
+  %w(r ed g reen b lue a lpha).each_slice(2) do |abb, full|
+    alias_method abb+full, abb
+    alias_method abb+full+?=, abb+?=
+  end
   private_class_method :new
   def initialize r, g, b, a=255
     @r, @g, @b, @a = r, g, b, a
@@ -17,6 +21,23 @@ class Color
   end
   def self.rgba r, g, b, a
     new r, g, b, a
+  end
+  def self.hsl h, s, l
+    return new 2.55*l, 2.55*l, 2.55*l if s == 0
+    h /= 360.0
+    s /= 100.0
+    l /= 100.0
+    t2 = l < 0.5 ? l*(1+s) : l+s-l*s
+    t1 = 2*l-t2
+    new *([1.0/3, 0, -1.0/3].map do |x|
+      t3 = (x+h)%1
+      case
+      when 6*t3 < 1 ; 100*(t1+(t2-t1)*6*t3)
+      when 2*t3 < 1 ; 100*t2
+      when 3*t3 < 2 ; 100*(t1+(t2-t1)*6*(2.0/3-t3))
+      else          ; 100*t1
+      end
+    end)
   end
   def self.html s
     s =~ /#((..){3,4})/
@@ -40,15 +61,18 @@ class Color
     end
   end
   
-  def to_html alpha=true
-    a = alpha ? to_rgba : to_rgb
+  def html alpha=true
+    a = alpha ? rgba : rgb
     '#' + a.pack('C*').unpack('H*')[0]
   end
-  def to_rgb
+  def rgb
     [@r, @g, @b]
   end
-  def to_rgba
+  def rgba
     [@r, @g, @b, @a]
+  end
+  def hsl
+    
   end
   
   # Return random color
@@ -58,6 +82,10 @@ class Color
   # Return random color, with random alpha
   def self.randa
     new Kernel.rand(255), Kernel.rand(255), Kernel.rand(255), Kernel.rand(255)
+  end
+  
+  def == color
+    @r == color.r && @g == color.g && @b =color.b && @a == color.a
   end
 end
 end
