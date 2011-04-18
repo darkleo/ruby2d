@@ -6,7 +6,6 @@ class Bitmap
   #
   # args can be :
   # * (defaults arguments)
-  # * x..x2, y..y2
   # * width, height
   # * x, y, width, height
   # * x, y, width, height, ox, oy, angle
@@ -34,13 +33,16 @@ class Bitmap
       end
     when 2 # Integer * 2
       @width, @height = *args
+    when 3 # Integer * 2, String
+      @width, @height, @data = *args
     else
       fail ArgumentError, 'wrong number of arguments'
     end
     @name ||= ''
-    @data ||= "\x00"*@width*@height*4
+    @data ||= [0].pack('C')*@width*@height*4
     fail 'Invalid size' unless @data.size == @width*@height*4
   end
+  DefaultFont = Font.new(File.join(File.dirname(__FILE__),'default'))
   
   def use
     unless @tex_id
@@ -77,6 +79,8 @@ class Bitmap
     end
     @need_bind = true
   end
+  alias_method :[], :get_pixel
+  alias_method :[]=, :set_pixel
   
   # Modes are
   # * :source
@@ -94,30 +98,29 @@ class Bitmap
   def blt bitmap, rect, x, y, mode=:source_over
     case mode
     when :source
-      h = [@height-rect.y, bitmap.height-rect.x, rect.height].min
+      h = [@height-y, rect.height].min
       for j in 0...h
-        #~ z_src  = 4*x+4*(y+j)*@real_size
         z_src  = 4*x+4*(y+j)*@width
         z_dest = 4*rect.x+4*(rect.y+j)*bitmap.width
-        w = [@width-rect.x, bitmap.width-rect.x, rect.width].min
+        w = [@width-x, rect.width].min
         @data[z_src, 4*w] = bitmap.data[z_dest, 4*w]
       end
     when :dest
       # nada
     when :source_over
-      h = [@height-rect.y, rect.height].min
-      w = [@width-rect.x, rect.width].min
+      h = [@height-y, rect.height].min
+      w = [@width-x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.width, 4].unpack 'C*'
+          dest = @data[4*(x+i)+4*(y+j)*@width, 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2+src[0]*(1-a2)+dest[0]*(1-a1)
           g = src[1]*a1*a2+src[1]*(1-a2)+dest[1]*(1-a1)
           b = src[2]*a1*a2+src[2]*(1-a2)+dest[2]*(1-a1)
           a = a1*a2+a1*(1-a2)+a2*(1-a1)
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[4*(x+i)+4*(y+j)*@width, 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :destination_over
@@ -285,6 +288,12 @@ class Bitmap
       @data[z, 4*w] = full
     end
     @need_bind = true
+  end
+  
+  def draw_text str, x, y, font=DefaultFont, mode=:source_over
+    bitmap = font.render str
+    rect ||= Rect.new(0...bitmap.width, 0...bitmap.height)
+    blt bitmap, rect, x, y, mode
   end
 end
 end
