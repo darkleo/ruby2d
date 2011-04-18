@@ -20,13 +20,13 @@ module Input
         when :release
           @current[key] = -1
         end
-        @next.delete key
       elsif @current[key] == -1
         @current.delete key
       else
         @current[key] += 1
       end
     end
+    @next.clear
     nil
   end
 
