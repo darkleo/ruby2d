@@ -2,19 +2,24 @@ module Ruby2D
 class Frame < Graphic
   def initialize frame=Ruby2D::Graphics.main_frame
     @list = []
-    @x = @y = @ox = @oy = 0
+    @x    = 0
+    @y    = 0
+    @z    = 0
+    @ox   = 0
+    @oy   = 0
     @angle = 0
-    @zoom_x = @zoom_y = 100
+    @zoom_x = 1
+    @zoom_y = 1
     @opacity = 100
     @color = Color.gray 255
     @visible = true
     frame << self if frame
-    #~ Ruby2D::Graphics.main_frame << self unless main
   end
   def << graph
     graph.belongs_to >> graph rescue nil
     @list << graph
     graph.belongs_to = self
+    sort!
   end
   def >> graph
     @list.delete graph
@@ -24,7 +29,7 @@ class Frame < Graphic
     @list.sort!
   end
   def update
-    @list.each(&:update)
+    @list.each {|g| g.update}
   end
   def output
     return unless @visible
@@ -33,11 +38,11 @@ class Frame < Graphic
     GL.PushMatrix
     GL.Translate(@x, -@y, 0)
     GL.Rotate(@angle, 0, 0, 1) if @angle != 0
-    GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
+    GL.Scale(@zoom_x, @zoom_y, 1)
     GL.Translate(-@ox, @oy, 0)
     GL.Color(@color.r/255.0, @color.g/255.0, @color.b/255.0, @opacity/100.0)
     
-    @list.each(&:output)
+    @list.each {|g| g.output}
     
     GL.PopMatrix
   end

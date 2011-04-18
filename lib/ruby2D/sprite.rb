@@ -18,11 +18,11 @@ class Sprite < Graphic
     @ox   = 0
     @oy   = 0
     @angle   = 0
-    @zoom_x  = 100
-    @zoom_y  = 100
+    @zoom_x  = 1
+    @zoom_y  = 1
     @opacity = 100
     @color = Color.gray 255
-    @visible = true
+    @visible = false
     @disposed = false
     case args.size
     when 0 # Default
@@ -49,6 +49,7 @@ class Sprite < Graphic
     end
     @rect = Rect.new(0, 0, @bitmap.width, @bitmap.height)
     create_id
+    @visible = true
   end
   def dispose
     @disposed = true
@@ -60,32 +61,26 @@ class Sprite < Graphic
     @rect = Rect.new(0, 0, @bitmap.width, @bitmap.height)
   end
   
-  def output# intern use ONLY
-    return if @disposed
-    return unless @rect
-    return unless @bitmap
-    return unless @visible
-    return unless @opacity != 0
+  def output
+    return if !@visible || @opacity.zero?
     
     GL.PushMatrix
     GL.Translate(@x, -@y, 0)
     GL.Rotate(@angle, 0, 0, 1) if @angle != 0
-    GL.Scale(@zoom_x/100.0, @zoom_y/100.0, 1)
+    GL.Scale(@zoom_x, @zoom_y, 1)
     GL.Translate(-@ox, @oy, 0)
     GL.Color(@color.r/255.0, @color.g/255.0, @color.b/255.0, @opacity/100.0)
     
-    #~ @bitmap.bind if bind
     @bitmap.use
-    
     w = @rect.width
     h = @rect.height
-    c1, c2, c3, c4 = *@rect.coords.map {|t| [t[0].to_f/w, t[1].to_f/h]}
+    c = @rect.coords.collect {|t| [t[0].to_f/w, t[1].to_f/h]}
     
     GL.Begin(GL::QUADS)
-      GL.TexCoord2f(*c1) ; GL.Vertex3f(0, 0, 0)
-      GL.TexCoord2f(*c2) ; GL.Vertex3f(w, 0, 0)
-      GL.TexCoord2f(*c3) ; GL.Vertex3f(w, -h, 0)
-      GL.TexCoord2f(*c4) ; GL.Vertex3f(0, -h, 0)
+      GL.TexCoord2f(*c[0]) ; GL.Vertex3f(0, 0, 0)
+      GL.TexCoord2f(*c[1]) ; GL.Vertex3f(w, 0, 0)
+      GL.TexCoord2f(*c[2]) ; GL.Vertex3f(w, -h, 0)
+      GL.TexCoord2f(*c[3]) ; GL.Vertex3f(0, -h, 0)
     GL.End
     GL.PopMatrix
   end
