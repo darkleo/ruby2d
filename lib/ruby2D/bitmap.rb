@@ -73,7 +73,7 @@ class Bitmap
   def set_pixel x, y, c
     begin
       fail IndexError if x<0||x>=@width||y<0||y>=@height
-      @data[4*x.to_i+4*y.to_i*@width, 4] = c.to_rgba.pack 'C*'
+      @data[4*x.to_i+4*y.to_i*@width, 4] = c.rgba.pack 'C*'
     rescue IndexError
       fail 'pixel out of range'
     end
@@ -267,7 +267,7 @@ class Bitmap
     when 2
       rect, color = *args
     end
-    str = color.to_rgba.pack 'C*'
+    str = color.rgba.pack 'C*'
     w = [@width-rect.x, rect.width].min
     h = [@height-rect.y, rect.height].min
     full = str*w
