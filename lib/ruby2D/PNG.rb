@@ -42,7 +42,6 @@ class PNG < ImageFile
       fail 'Unknown filter' if @filter_method != 0
       @interlace_method = data[12].ord
       warn 'WARNING: Adam7 interlace method not supported' if @interlace_method == 1
-      #~ p [@width, @height, @bit_depth, @color_type]
     when 'PLTE'
       fail 'PLTE Error : chunk length not divisible by 3' if data.size%3 != 0
       @plte = []
@@ -65,11 +64,11 @@ class PNG < ImageFile
       #~ else
         #~ @px_trns = *data.unpack('n*')
       #~ end
-    when 'tEXt', 'tIME', 'pHYs', 'gAMA', 'sBIT', 'zTXt', 'iTXt'
+    when 'tEXt', 'tIME', 'pHYs', 'gAMA', 'sBIT', 'zTXt', 'iTXt', 'cHRM', 'sRGB'
       #~ # Normalement peu importants
     else
-      p data
       puts 'Catastrophe !', 'un nouveau type de chunk !', header
+      p data
     end
     return true
   end
@@ -217,5 +216,18 @@ class PNG < ImageFile
     eb<=ec ? b : c
   end
   protected :paeth
+  
+  def self.write bitmap, path
+    file = File.new(path, 'wb')
+    file.write([137, 80, 78, 71, 13, 10, 26, 10].pack('C*'))
+    write_chunk file, 'IHDR', [bitmap.width, bitmap.height, 8, 6, 0, 0, 0].pack('NNCCCCC')
+    data = bitmap.data.scan(/.{#{4*bitmap.width}}/m).map {|s| [0].pack('C')+s}*''
+    write_chunk file, 'IDAT', Zlib::Deflate.deflate(data)
+    write_chunk file, 'IEND'
+    file.close
+  end
+  def self.write_chunk file, header, data=''
+    file.write([data.size].pack('N')+header+data+[Zlib.crc32(header+data)].pack('N'))
+  end
 end
 end
