@@ -81,7 +81,21 @@ class Rect < Shape
     else
       fail ArgumentError, 'wrong number of arguments'
     end
+    @coords = coords
     self
+  end
+  
+  def move! x, y
+    @coords = nil
+    super
+  end
+  def translate! x, y
+    @coords = nil
+    super
+  end
+  def rotate! angle
+    @coords = nil
+    super
   end
   
   # Return vertex coordinates
@@ -89,7 +103,7 @@ class Rect < Shape
   # [[x,y], [x,y], [x,y], [x,y]]
   def coords
     # TODO : improve calcul
-    # TODO : save result
+    return @coords if @coords
     return [[@x, @y],
             [@x+@width, @y],
             [@x+@width, @y+@height],
