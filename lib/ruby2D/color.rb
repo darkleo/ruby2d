@@ -7,7 +7,7 @@ class Color
   end
   private_class_method :new
   def initialize r, g, b, a=255
-    @r, @g, @b, @a = r, g, b, a
+    @r, @g, @b, @a = [r, g, b, a].map &:to_i
   end
   
   def self.gray g
