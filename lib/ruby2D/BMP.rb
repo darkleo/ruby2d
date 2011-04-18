@@ -26,9 +26,9 @@ class BMP < ImageFile
     data.each_slice(3*@width) do |line|
       temp = []
       line.each_slice(3) {|pixel| temp.push(*pixel.reverse << 255)}
-      corrected = temp.push(*corrected)
+      corrected = corrected << temp
     end
-    corrected.pack 'C*'
+    corrected.reverse.flatten.pack 'C*'
   end
 end
 end
