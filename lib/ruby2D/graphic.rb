@@ -19,9 +19,12 @@ class Graphic
     @zoom_x
   end
   def <=> graph
-    self.z <=> graph.z
+    @z <=> graph.z
   end
   def update
+  end
+  def dispose
+    @belongs_to >> self
   end
 end
 end
