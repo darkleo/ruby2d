@@ -4,6 +4,9 @@ module Graphics
   
   @main_frame = Frame.new nil
   attr_accessor :main_frame
+  def @main_frame.dispose
+    fail 'You cannot simply dispose the main Frame'
+  end
   
   @frame_count = 0
   @fps = 0
@@ -39,9 +42,11 @@ module Graphics
     end
     @frame_count += 1
     @last_time = now
+    GLUT.PostRedisplay()
+    
     return unless @fps_in_title
     if @frame_count % @fps_delay == 0
-      @fps = @fps_delay*1000/(now-@fps_last_time)
+      @fps = @fps_delay*1000/(now-@fps_last_time) rescue 'Infinity'
       Window.name_suffix = " - #@fps fps"
       @fps_last_time = now
     end
