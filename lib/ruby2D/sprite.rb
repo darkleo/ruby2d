@@ -23,7 +23,6 @@ class Sprite < Graphic
     @opacity = 100
     @color = Color.gray 255
     @visible = false
-    @disposed = false
     case args.size
     when 0 # Default
       self.bitmap = Bitmap.new
@@ -50,9 +49,6 @@ class Sprite < Graphic
     @rect = Rect.new(0, 0, @bitmap.width, @bitmap.height)
     create_id
     @visible = true
-  end
-  def dispose
-    @disposed = true
   end
 
   def bitmap= bitmap
