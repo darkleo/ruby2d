@@ -1,12 +1,12 @@
 # Sudoku solver
 # By Darkleo
 
-$:.insert 0, '../../lib/'
-require 'ruby2d'
+require '../../lib/ruby2D'
+include Ruby2D
 Cache.add_location 'Sudoku/'
 
 def solve board
-  i = board.index '0'
+  i = board.index ?0
   if i == nil
     fail board
     return
@@ -27,18 +27,18 @@ end
 Size = 42
 Window.name = 'Sudoku'
 Window.resize 378, 462
-Window.run {
-  @back = Sprite.new Bitmap.new('back.png')
-  @cursor1 = Sprite.new Bitmap.new('curs1.png')
+Window.run do
+  @back = Sprite.new Bitmap.new('back')
+  @cursor1 = Sprite.new Bitmap.new('curs1')
   @cursor1.visible = false
-  @cursor2 = Sprite.new Bitmap.new('curs2.png')
+  @cursor2 = Sprite.new Bitmap.new('curs2')
   @cursor2.visible = false
   @cursor2.y = 9*Size
-  @numbers = Bitmap.new 'numbers.png'
+  @numbers = Bitmap.new 'numbers'
   @grid = Sprite.new Bitmap.new(378, 378)
 
   # Input
-  board = "0"*81
+  board = ?0*81
   need_to_solve = false
   until need_to_solve
     Graphics.update
@@ -63,30 +63,30 @@ Window.run {
       y = @cursor1.y/Size
       board[x+9*y] = key.to_s
     end
-    if Input.press?(' ') or Input.press?('0')
+    if Input.press?(?\s) or Input.press?(?0)
       rect = Rect.new(0...Size, 0...Size)
       rect.translate! @cursor1.x, @cursor1.y
       @grid.bitmap.clear rect
       x = @cursor1.x/Size
       y = @cursor1.y/Size
-      board[x+9*y] = '0'
+      board[x+9*y] = ?0
     end
   end
 
   # Result
   solve board rescue solved = $!.message
-  popop 'no solution' unless solved
-  81.times {|i|
+  puts 'no solution' unless solved
+  81.times do |i|
     x = i%9*Size
     y = i/9*Size
     rect = Rect.new(0...Size, 0...Size)
     rect.translate! (solved[i].to_i-1)%3*Size, (solved[i].to_i-1)/3*Size
     @grid.bitmap.blt @numbers, rect, x, y, :source
     Graphics.update
-  }
-  loop {
+  end
+  loop do
     Mouse.update
-    sleep 0.01
+    sleep 0
     exit if Mouse.press?
-  }
-}
+  end
+end

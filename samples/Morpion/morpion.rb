@@ -2,15 +2,15 @@
 # By Darkleo
 
 $:.insert 0, '../../lib/'
-require 'ap'
-require 'ruby2d'
+require 'ruby2D'
+include Ruby2D
 
 Cache.add_location 'Morpion/'
 Size = 85
 class Move
   @@board = [nil]*9
-  X = Bitmap.new 'X.png'
-  O = Bitmap.new 'O.png'
+  X = Bitmap.new ?X
+  O = Bitmap.new ?O
   attr_reader :win_move, :valid, :x, :y
   def initialize x, y, c
     @valid = @@board[x + 3*y].nil?
@@ -39,14 +39,13 @@ end
 
 Window.name = 'Morpion'
 Window.resize 3*Size, 3*Size
-Window.run {
+Window.run do
   @back = Sprite.new
-  @back.bitmap = Bitmap.new 'back.png'
+  @back.bitmap = Bitmap.new 'back'
   @moves = []
-  loop {
+  loop do
     Graphics.update
     Mouse.update
-    sleep 0.01
     if Mouse.trigger? Mouse::Left
       c = @moves.size % 2 == 0 ? :x : :o
       m = Move.new(Mouse.x/Size, Mouse.y/Size, c)
@@ -55,19 +54,19 @@ Window.run {
       break if m.win_move
     end
     break if @moves.size == 9
-  }
+  end
   if @moves.last.win_move
-    @back.bitmap = Bitmap.new('win.png')
+    @back.bitmap = Bitmap.new('win')
     c = @moves.size % 2 == 0 ? :o : :x
-    @moves.each {|m| m.dispose}
+    @moves.each &:dispose
     @winmove = Move.new(1, 0.5, c)
   else
-    @back.bitmap = Bitmap.new('lose.png')
-    @moves.each {|m| m.dispose}
+    @back.bitmap = Bitmap.new('lose')
+    @moves.each &:dispose
   end
   Graphics.update
-  loop {
+  loop do
     Mouse.update
     exit! if Mouse.trigger? Mouse::Left
-  }
-}
+  end
+end
