@@ -1,17 +1,15 @@
-module Ruby2D
-module Cache
-  extend self
-  
+class Ruby2D::Cache
   @data = {}
   @local = ['']
   EXTS = %w(.png .bmp)
-  
+end
+class << Ruby2D::Cache
   def load_bitmap name
     return @data[name] if @data.include? name
     unless File.extname(name).empty?
       names = [name]
     else
-      names = EXTS.map {|ext| name+ext}
+      names = Ruby2D::Cache::EXTS.map {|ext| name+ext}
     end
     @local.reverse_each do |path|
       names.each do |str|
@@ -31,13 +29,13 @@ module Cache
   private
   def load_with_path path, name, original_name
     begin
-      case File.extname name
+      case File.extname(name).downcase
       when '.img'
         @data[original_name] = load_img path, name
-      when '.png', '.PNG'
-        @data[original_name] = PNG.new path, name
+      when '.png'
+        @data[original_name] = Ruby2D::PNG.new path, name
       when '.bmp'
-        @data[original_name] = BMP.new path, name
+        @data[original_name] = Ruby2D::BMP.new path, name
       when ''
       else
         return false
@@ -59,5 +57,4 @@ module Cache
     file.close
     return struct
   end
-end
 end

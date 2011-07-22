@@ -1,11 +1,9 @@
-module Ruby2D
 # Handles input data from a keyboard.
-module Input
-  extend self
-  
+class Ruby2D::Input
   @current = {}
   @next    = {}
-  
+end
+class << Ruby2D::Input
   # Updates input data.
   # 
   # As a rule, this method is called once per frame.
@@ -107,5 +105,4 @@ module Input
     (1..9).each {|i| return i if press? i.to_s}
     0
   end
-end
 end

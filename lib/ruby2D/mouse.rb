@@ -1,8 +1,5 @@
-module Ruby2D
 # Handles input data from a mouse.
-module Mouse
-  extend self
-  
+class Ruby2D::Mouse
   Left   = :left
   Middle = :middle
   Right  = :right
@@ -13,7 +10,6 @@ module Mouse
             :right  => :off,
             :wheel_up   => false,
             :wheel_down => false}
-  
   @data = Empty.clone
   @data[:x] = 0
   @data[:y] = 0
@@ -24,7 +20,8 @@ module Mouse
   @drop = {:left   => false,
            :middle => false,
            :right  => false}
-  
+end
+class << Ruby2D::Mouse
   # Updates input data.
   # 
   # As a rule, this method is called once per frame.
@@ -45,7 +42,7 @@ module Mouse
       end
     end
     @data.update @next
-    @next = Empty.clone
+    @next = Ruby2D::Mouse::Empty.clone
     [:left, :middle, :right].each do |key|
       @next[key] = :on  if @data[key] == :down
       @next[key] = :on  if @data[key] == :on
@@ -140,5 +137,4 @@ module Mouse
   def in? shape
     shape === position
   end
-end
 end
