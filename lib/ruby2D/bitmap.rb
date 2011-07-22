@@ -39,8 +39,8 @@ class Bitmap
       fail ArgumentError, 'wrong number of arguments'
     end
     @name ||= ''
-    @data ||= [0].pack('C')*@width*@height*4
-    fail 'Invalid size' unless @data.size == @width*@height*4
+    @data ||= Array.new(@height) {[0].pack('C')*@width*4}
+    fail 'Invalid bitmap size' unless @data.join.size == @width*@height*4
   end
   DefaultFont = Font.new(File.join(File.dirname(__FILE__),'default'))
   
@@ -57,7 +57,7 @@ class Bitmap
     end
     if @need_bind
       GL.TexImage2D GL::TEXTURE_2D, 0, GL::RGBA, @width, @height,
-        0, GL::RGBA, GL::UNSIGNED_BYTE, @data
+        0, GL::RGBA, GL::UNSIGNED_BYTE, @data.join
       @need_bind = false
     end
   end
@@ -65,7 +65,7 @@ class Bitmap
   def get_pixel x, y
     begin
       fail IndexError if x<0||x>=@width||y<0||y>=@height
-      Color.rgba(*@data[4*x+4*y*@width, 4].unpack('C*'))
+      Color.rgba(*@data[y][4*x, 4].unpack('C*'))
     rescue IndexError
       fail 'pixel out of range'
     end
@@ -73,7 +73,7 @@ class Bitmap
   def set_pixel x, y, c
     begin
       fail IndexError if x<0||x>=@width||y<0||y>=@height
-      @data[4*x.to_i+4*y.to_i*@width, 4] = c.rgba.pack 'C*'
+      @data[y.to_i][4*x.to_i, 4] = c.rgba.pack 'C*'
     rescue IndexError
       fail 'pixel out of range'
     end
@@ -99,11 +99,9 @@ class Bitmap
     case mode
     when :source
       h = [@height-y, rect.height].min
+      w = [@width-x, rect.width].min
       for j in 0...h
-        z_src  = 4*x+4*(y+j)*@width
-        z_dest = 4*rect.x+4*(rect.y+j)*bitmap.width
-        w = [@width-x, rect.width].min
-        @data[z_src, 4*w] = bitmap.data[z_dest, 4*w]
+        @data[y+j][4*x, 4*w] = bitmap.data[rect.y+j][4*rect.x, 4*w]
       end
     when :dest
       # nada
@@ -112,15 +110,15 @@ class Bitmap
       w = [@width-x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.width, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@width, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2+src[0]*(1-a2)+dest[0]*(1-a1)
           g = src[1]*a1*a2+src[1]*(1-a2)+dest[1]*(1-a1)
           b = src[2]*a1*a2+src[2]*(1-a2)+dest[2]*(1-a1)
           a = a1*a2+a1*(1-a2)+a2*(1-a1)
-          @data[4*(x+i)+4*(y+j)*@width, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :destination_over
@@ -128,15 +126,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*a1*a2+src[0]*(1-a2)+dest[0]*(1-a1)
           g = dest[1]*a1*a2+src[1]*(1-a2)+dest[1]*(1-a1)
           b = dest[2]*a1*a2+src[2]*(1-a2)+dest[2]*(1-a1)
           a = a1+a2-a1*a2
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :source_in
@@ -144,15 +142,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2
           g = src[1]*a1*a2
           b = src[2]*a1*a2
           a = a1*a2
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :destination_in
@@ -160,15 +158,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*a1*a2
           g = dest[1]*a1*a2
           b = dest[2]*a1*a2
           a = a1*a2
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :source_out
@@ -176,15 +174,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*(1-a2)
           g = src[1]*(1-a2)
           b = src[2]*(1-a2)
           a = a1*(1-a2)
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :destination_out
@@ -192,15 +190,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*(1-a1)
           g = dest[1]*(1-a1)
           b = dest[2]*(1-a1)
           a = a2*(1-a1)
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :source_atop
@@ -208,15 +206,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*a1*a2+dest[0]*(1-a1)
           g = src[1]*a1*a2+dest[1]*(1-a1)
           b = src[2]*a1*a2+dest[2]*(1-a1)
           a = a2
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :destination_atop
@@ -224,15 +222,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = dest[0]*a1*a2+src[0]*(1-a2)
           g = dest[1]*a1*a2+src[1]*(1-a2)
           b = dest[2]*a1*a2+src[2]*(1-a2)
           a = a1
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     when :clear
@@ -242,15 +240,15 @@ class Bitmap
       w = [@width-rect.x, rect.width].min
       for j in 0...h
         for i in 0...w
-          src = bitmap.data[4*(rect.x+i)+4*(rect.y+j)*bitmap.real_size, 4].unpack 'C*'
-          dest = @data[4*(x+i)+4*(y+j)*@real_size, 4].unpack 'C*'
+          src = bitmap.data[rect.y+j][4*(rect.x+i), 4].unpack 'C*'
+          dest = @data[y+j][4*(x+i), 4].unpack 'C*'
           a1 = src[3]/255.0
           a2 = dest[3]/255.0
           r = src[0]*(1-a2)+dest[0]*(1-a1)
           g = src[1]*(1-a2)+dest[1]*(1-a1)
           b = src[2]*(1-a2)+dest[2]*(1-a1)
           a = a1*(1-a2)+a2*(1-a1)
-          @data[4*(x+i)+4*(y+j)*@real_size, 4] = [r, g, b, a*255].pack 'C*'
+          @data[y+j][4*(x+i), 4] = [r, g, b, a*255].pack 'C*'
         end
       end
     else
@@ -272,8 +270,7 @@ class Bitmap
     h = [@height-rect.y, rect.height].min
     full = str*w
     for j in 0...h
-      z = 4*rect.x+4*(rect.y+j)*@width
-      @data[z, 4*w] = full
+      @data[rect.y+j][4*rect.x, 4*w] = full
     end
     @need_bind = true
   end
@@ -284,13 +281,12 @@ class Bitmap
     h = [@height-rect.y, rect.height].min
     full = "\x00"*4*w
     for j in 0...h
-      z = 4*rect.x+4*(rect.y+j)*@width
-      @data[z, 4*w] = full
+      @data[rect.y+j][4*rect.x, 4*w] = full
     end
     @need_bind = true
   end
   
-  def draw_text str, x, y, font=DefaultFont, mode=:source_over
+  def draw_text str, x=0, y=0, font=DefaultFont, mode=:source_over
     bitmap = font.render str
     rect ||= Rect.new(0...bitmap.width, 0...bitmap.height)
     blt bitmap, rect, x, y, mode

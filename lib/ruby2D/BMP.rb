@@ -28,7 +28,7 @@ class BMP < ImageFile
       line.each_slice(3) {|pixel| temp.push(*pixel.reverse << 255)}
       corrected = corrected << temp
     end
-    corrected.reverse.flatten.pack 'C*'
+    corrected.reverse.map {|line| line.pack 'C*'}
   end
 end
 end

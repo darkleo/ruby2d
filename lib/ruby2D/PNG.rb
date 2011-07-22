@@ -48,8 +48,8 @@ class PNG < ImageFile
       data.unpack('C*').each_slice(3){|s|@plte << s}
     when 'tRNS'
       @trns = case @color_type
-      when 2
-        data.unpack('n*')
+      when 2 ; data.unpack('n*')
+      when 3 ; data.unpack('C*')
       else
         fail 'tRNS still not supported'
       end
@@ -73,6 +73,7 @@ class PNG < ImageFile
     return true
   end
   def correct
+    # TODOBETTER!
     str = Zlib::Inflate.inflate @data
     corrected = []
     case @color_type
@@ -85,6 +86,7 @@ class PNG < ImageFile
         j = 0
         left = 0
         line = []
+        corrected_line = []
         scanline.unpack('B*').first.scan(/.{#{@bit_depth}}/).each do |b|
           c = Integer('0b'+b)*255/(2**@bit_depth-1)
           c += case filter
@@ -94,13 +96,14 @@ class PNG < ImageFile
             when 3 ; (left + last_line[j])/2
             when 4 ; paeth last_line[j], left, last_line[j-1]
           end
-          c %= 256
+          c = c%256
           left = c
           line << c
-          corrected.push c, c, c, 255
+          corrected_line.push c, c, c, 255
           j += 1
         end
         i += 1
+        corrected << corrected_line
         last_line = line << 0
       end
     when 2 # RGB
@@ -113,6 +116,7 @@ class PNG < ImageFile
         j = 0
         left = [0]*3
         line = []
+        corrected_line = []
         scanline.last.unpack('C*').each_slice 3 do |c|
           3.times do |k|
             c[k] += case filter
@@ -123,36 +127,40 @@ class PNG < ImageFile
               when 4 ; paeth last_line[3*j+k], left[k], last_line[3*j-3+k]
               else   ; 0
             end
-            c[k] %= 256
+            c[k] = c[k]%256
           end
           left = c
           line.push(*c)
-          corrected.push(*c << (c == @trns ? 0 : 255))
+          corrected_line.push(*c << (c == @trns ? 0 : 255))
           j += 1
         end
         i += 1
+        corrected << corrected_line
         last_line = line.push 0, 0, 0
       end
     when 3 # PLTE
       array = str.scan(/(.)(.{#{(@width*@bit_depth/8.0).ceil}})/m)
       array.each do |scanline|
         filter = scanline.first.unpack('C').first
+        line = []
         scanline.last.unpack('B*').first.scan(/.{#{@bit_depth}}/).each do |k|
-          pixel = @plte[Integer('0b'+k)].dup << 255
-          corrected.push(*pixel)
+          i = Integer('0b'+k)
+          pixel = @trns.include?(i) ? [0, 0, 0, 0] : (@plte[i].dup << 255)
+          line.push(*pixel)
         end
+        corrected << line
       end
     when 4 # Grayscale + alpha
       array = str.scan(/.{#{1+(2*@width*@bit_depth/8.0).ceil}}/m)
       i = 0
-      last_line = [0]*(@width+1)
+      last_line = [0]*(2*@width+1)
       array.each do |scanline|
         filter = scanline.slice!(0).unpack('C').first
         j = 0
-        left = 0
+        left = [0]*2
         line = []
+        corrected_line = []
         scanline.unpack('B*').first.scan(/(.{#{@bit_depth}})(.{#{@bit_depth}})/).each do |c|
-          #~ p left, last_line
           2.times do |k|
             c[k] = Integer('0b'+c[k])*255/(2**@bit_depth-1)
             c[k] += case filter
@@ -163,14 +171,15 @@ class PNG < ImageFile
               when 4 ; paeth last_line[2*j+k], left[k], last_line[2*j-2+k]
               else   ; 0
             end
-            c[k] %= 256
+            c[k] = c[k]%256
           end
-          left = *c
+          left = c
           line.push(*c)
-          corrected.push c[0], c[0], c[0], c[1]
+          corrected_line.push c[0], c[0], c[0], c[1]
           j += 1
         end
         i += 1
+        corrected << corrected_line
         last_line = line.push 0, 0
       end
     when 6 # RGBA
@@ -193,20 +202,20 @@ class PNG < ImageFile
               when 4 ; paeth last_line[4*j+k], left[k], last_line[4*j-4+k]
               else   ; 0
             end
-            c[k] %= 256
+            c[k] = c[k]%256
           end
           left = c
           line.push(*c)
-          corrected.push(*c)
           j += 1
         end
-        i += 1
+        corrected << line.dup
         last_line = line.push 0, 0, 0, 0
+        i += 1
       end
     else
       fail 'PNG mode unknow'
     end
-    @data = corrected.pack 'C*'
+    @data = corrected.map {|line| line.pack 'C*'}
     @corrected = true
   end
   def paeth a, b, c
@@ -221,7 +230,7 @@ class PNG < ImageFile
     file = File.new(path, 'wb')
     file.write([137, 80, 78, 71, 13, 10, 26, 10].pack('C*'))
     write_chunk file, 'IHDR', [bitmap.width, bitmap.height, 8, 6, 0, 0, 0].pack('NNCCCCC')
-    data = bitmap.data.scan(/.{#{4*bitmap.width}}/m).map {|s| [0].pack('C')+s}*''
+    data = bitmap.data.map {|s| [0].pack('C')+s}.join
     write_chunk file, 'IDAT', Zlib::Deflate.deflate(data)
     write_chunk file, 'IEND'
     file.close
