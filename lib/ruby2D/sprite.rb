@@ -2,7 +2,9 @@ module Ruby2D
 class Sprite < Graphic
   attr_reader :name, :id
   attr_accessor :rect
-  attr_reader :bitmap # rect
+  attr_reader :bitmap
+  attr_accessor :blend_type
+  @@blend_type = 0
   
   # Create a new Sprite object.
   #
@@ -23,6 +25,7 @@ class Sprite < Graphic
     @opacity = 100
     @color = Color.gray 255
     @visible = false
+    @blend_type = 0
     case args.size
     when 0 # Default
       self.bitmap = Bitmap.new
@@ -68,20 +71,35 @@ class Sprite < Graphic
     GL.Color(@color.r/255.0, @color.g/255.0, @color.b/255.0, @opacity/100.0)
     
     @bitmap.use
-    w = @rect.width
-    h = @rect.height
-    c = @rect.coords.collect {|t| [t[0].to_f/w, t[1].to_f/h]}
+    bw = @bitmap.width
+    bh = @bitmap.height
+    rw = @rect.width
+    rh = @rect.height
+    c = @rect.coords.collect {|t| [t[0].to_f/bw, t[1].to_f/bh]}
+    
+    blend_helper
     
     GL.Begin(GL::QUADS)
       GL.TexCoord2f(*c[0]) ; GL.Vertex3f(0, 0, 0)
-      GL.TexCoord2f(*c[1]) ; GL.Vertex3f(w, 0, 0)
-      GL.TexCoord2f(*c[2]) ; GL.Vertex3f(w, -h, 0)
-      GL.TexCoord2f(*c[3]) ; GL.Vertex3f(0, -h, 0)
+      GL.TexCoord2f(*c[1]) ; GL.Vertex3f(rw, 0, 0)
+      GL.TexCoord2f(*c[2]) ; GL.Vertex3f(rw, -rh, 0)
+      GL.TexCoord2f(*c[3]) ; GL.Vertex3f(0, -rh, 0)
     GL.End
     GL.PopMatrix
   end
   
   private
+  def blend_helper
+    return if @blend_type == @@blend_type
+    @@blend_type = @blend_type
+    types = case @blend_type
+      when 0 ; [GL::SRC_ALPHA, GL::ONE_MINUS_SRC_ALPHA]
+      when 1 ; [GL::SRC_ALPHA, GL::ONE]
+      #~ when 2 ; [GL::ONE_MINUS_SRC_ALPHA, GL::ONE]
+    end
+    GL.BlendFunc(*types)
+  end
+  
   # TODO : change @@Max_IDS
   @@Max_IDS ||= 0
   def create_id
