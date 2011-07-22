@@ -1,4 +1,5 @@
 # Ruby2D
+Copyright (c) 2011 Darkleo
 
 ## Empty window
     require 'ruby2D'
